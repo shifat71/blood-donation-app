@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DONOR
+  MODERATOR
+  ADMIN
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VerificationType {
+  AUTO
+  MANUAL
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  password          String
+  name              String
+  role              Role               @default(DONOR)
+  isVerified        Boolean            @default(false)
+  verificationType  VerificationType?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  // Relations
+  donorProfile      DonorProfile?
+  verificationRequests VerificationRequest[]
+  moderatorActions  VerificationRequest[] @relation("ModeratorActions")
+  
+  @@index([email])
+  @@index([role])
+}
+
+model DonorProfile {
+  id                String      @id @default(cuid())
+  userId            String      @unique
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  bloodGroup        BloodGroup
+  lastDonationDate  DateTime?
+  isAvailable       Boolean     @default(true)
+  phoneNumber       String?
+  address           String?
+  studentId         String?
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  @@index([bloodGroup])
+  @@index([isAvailable])
+}
+
+model VerificationRequest {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status            VerificationStatus  @default(PENDING)
+  idCardImageUrl    String?             // URL to uploaded student ID card
+  studentId         String?
+  reason            String?             // Rejection reason or notes
+  
+  moderatorId       String?
+  moderator         User?               @relation("ModeratorActions", fields: [moderatorId], references: [id])
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  reviewedAt        DateTime?
+  
+  @@index([userId])
+  @@index([status])
+  @@index([moderatorId])
+}
