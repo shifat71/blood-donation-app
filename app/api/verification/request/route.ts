@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     let studentId: string | undefined;
     
     const contentType = request.headers.get('content-type');
+    console.log('[Verification Request] Content-Type:', contentType);
     
     // Handle both FormData (with file upload) and JSON
     if (contentType?.includes('multipart/form-data')) {
@@ -20,6 +21,8 @@ export async function POST(request: NextRequest) {
       const userIdParam = formData.get('userId') as string;
       const studentIdParam = formData.get('studentId') as string;
       const idCardFile = formData.get('idCard') as File;
+      
+      console.log('[Verification Request] FormData - userId:', userIdParam, 'studentId:', studentIdParam, 'hasFile:', !!idCardFile);
       
       if (!userIdParam || !idCardFile) {
         return NextResponse.json(
@@ -96,6 +99,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('[Verification Request] Created successfully:', verificationRequest.id);
     return NextResponse.json(verificationRequest, { status: 201 });
   } catch (error) {
     console.error('Error creating verification request:', error);

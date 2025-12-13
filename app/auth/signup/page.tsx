@@ -119,15 +119,26 @@ export default function SignUp() {
         formDataObj.append('studentId', formData.studentId);
         formDataObj.append('userId', data.user.id);
 
-        const verificationResponse = await fetch('/api/verification/request', {
-          method: 'POST',
-          body: formDataObj,
-        });
+        try {
+          const verificationResponse = await fetch('/api/verification/request', {
+            method: 'POST',
+            body: formDataObj,
+          });
 
-        if (!verificationResponse.ok) {
-          console.error('Failed to submit verification request');
-        } else {
-          setNeedsManualVerification(true);
+          if (!verificationResponse.ok) {
+            const errorData = await verificationResponse.json();
+            console.error('Failed to submit verification request:', errorData);
+            setError(`Account created but verification request failed: ${errorData.error || 'Unknown error'}`);
+            setLoading(false);
+            return;
+          } else {
+            setNeedsManualVerification(true);
+          }
+        } catch (verificationError) {
+          console.error('Error submitting verification:', verificationError);
+          setError('Account created but failed to submit verification request. Please submit from your dashboard.');
+          setLoading(false);
+          return;
         }
       }
 

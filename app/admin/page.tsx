@@ -184,7 +184,72 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <UserCog className="h-5 w-5" />
+                Moderator Management
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Current Moderators: <span className="font-semibold text-gray-900">{stats.moderators}</span>
+              </p>
+              <p className="text-xs text-gray-500 mb-3">
+                Promote verified donors to moderators to help review verification requests.
+              </p>
+              <button
+                onClick={() => {
+                  const verifiedDonors = users.filter(u => u.role === Role.DONOR && u.isVerified);
+                  if (verifiedDonors.length > 0) {
+                    setSelectedUser(verifiedDonors[0]);
+                    setNewRole(Role.MODERATOR);
+                  } else {
+                    alert('No verified donors available to promote');
+                  }
+                }}
+                className="w-full btn-primary text-sm"
+              >
+                Add New Moderator
+              </button>
+            </div>
           </div>
+
+          {/* Eligible for Moderator Section */}
+          {users.filter(u => u.role === Role.DONOR && u.isVerified).length > 0 && (
+            <div className="card mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <UserCog className="h-5 w-5 text-blue-600" />
+                Eligible for Moderator Role
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Verified donors who can be promoted to moderators
+              </p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {users
+                  .filter(u => u.role === Role.DONOR && u.isVerified)
+                  .slice(0, 6)
+                  .map((user) => (
+                    <div key={user.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                        <Shield className="h-5 w-5 text-green-600" />
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setNewRole(Role.MODERATOR);
+                        }}
+                        className="w-full mt-3 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        Promote to Moderator
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
 
           {/* Users Table */}
           <div className="card">
@@ -261,24 +326,46 @@ export default function AdminDashboard() {
       {selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Change User Role</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              {newRole === Role.MODERATOR && selectedUser.role === Role.DONOR ? 'Promote to Moderator' : 'Change User Role'}
+            </h2>
             
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">User: <span className="font-medium text-gray-900">{selectedUser.name}</span></p>
-              <p className="text-sm text-gray-600 mb-4">Current Role: <span className="font-medium text-gray-900">{selectedUser.role}</span></p>
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-gray-600 mb-1">User</p>
+                <p className="font-medium text-gray-900">{selectedUser.name}</p>
+                <p className="text-sm text-gray-500">{selectedUser.email}</p>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-1">Current Role</p>
+                <span className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role)}`}>
+                  {selectedUser.role}
+                </span>
+              </div>
               
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                New Role
-              </label>
-              <select
-                className="input-field"
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value as Role)}
-              >
-                <option value={Role.DONOR}>DONOR</option>
-                <option value={Role.MODERATOR}>MODERATOR</option>
-                <option value={Role.ADMIN}>ADMIN</option>
-              </select>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Role
+                </label>
+                <select
+                  className="input-field"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value as Role)}
+                >
+                  <option value={Role.DONOR}>DONOR</option>
+                  <option value={Role.MODERATOR}>MODERATOR</option>
+                  <option value={Role.ADMIN}>ADMIN</option>
+                </select>
+              </div>
+
+              {newRole === Role.MODERATOR && selectedUser.role === Role.DONOR && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Moderator privileges:</strong> Can review and approve verification requests from donors.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3">
@@ -286,7 +373,7 @@ export default function AdminDashboard() {
                 onClick={handleRoleUpdate}
                 className="btn-primary flex-1"
               >
-                Update Role
+                {newRole === Role.MODERATOR && selectedUser.role === Role.DONOR ? 'Promote to Moderator' : 'Update Role'}
               </button>
               <button
                 onClick={() => setSelectedUser(null)}
