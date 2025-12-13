@@ -29,6 +29,10 @@ yarn-error.log*
 .env*.local
 .env
 
+# Helper scripts (contain temporary test code)
+generate-hash.js
+test-db-connection.js
+
 # vercel
 .vercel
 

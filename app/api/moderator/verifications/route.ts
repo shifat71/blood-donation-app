@@ -77,8 +77,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update verification request and user status
-    const [updatedRequest, updatedUser] = await prisma.$transaction([
-      prisma.verificationRequest.update({
+    const updatedRequest = await prisma.$transaction(async (tx) => {
+      const updated = await tx.verificationRequest.update({
         where: { id: requestId },
         data: {
           status,
@@ -86,17 +86,20 @@ export async function PUT(request: NextRequest) {
           moderatorId: session.user.id,
           reviewedAt: new Date(),
         },
-      }),
-      status === VerificationStatus.APPROVED
-        ? prisma.user.update({
-            where: { id: verificationRequest.userId },
-            data: {
-              isVerified: true,
-              verificationType: 'MANUAL',
-            },
-          })
-        : Promise.resolve(null),
-    ]);
+      });
+
+      if (status === VerificationStatus.APPROVED) {
+        await tx.user.update({
+          where: { id: verificationRequest.userId },
+          data: {
+            isVerified: true,
+            verificationType: 'MANUAL',
+          },
+        });
+      }
+
+      return updated;
+    });
 
     return NextResponse.json(updatedRequest);
   } catch (error) {

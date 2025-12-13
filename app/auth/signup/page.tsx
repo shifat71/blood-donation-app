@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Droplet, CheckCircle } from 'lucide-react';
+import { Droplet, CheckCircle, Upload } from 'lucide-react';
 
 export default function SignUp() {
   const router = useRouter();
@@ -14,16 +14,38 @@ export default function SignUp() {
     email: '',
     password: '',
     confirmPassword: '',
+    studentId: '',
   });
+  const [verificationType, setVerificationType] = useState<'auto' | 'manual'>('auto');
+  const [idCardFile, setIdCardFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [needsManualVerification, setNeedsManualVerification] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('File size must be less than 5MB');
+        return;
+      }
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+      setIdCardFile(file);
+      setError('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +66,31 @@ export default function SignUp() {
       return;
     }
 
+    const isUniversityEmail = formData.email.endsWith('@student.sust.edu');
+    
+    // Validation based on verification type
+    if (verificationType === 'auto') {
+      if (!isUniversityEmail) {
+        setError('Auto-verification requires a @student.sust.edu email address');
+        setLoading(false);
+        return;
+      }
+    } else {
+      // Manual verification requires ID card and student ID
+      if (!idCardFile) {
+        setError('Please upload your student ID card for manual verification');
+        setLoading(false);
+        return;
+      }
+      if (!formData.studentId.trim()) {
+        setError('Student ID is required for manual verification');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
+      // Register user
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -54,6 +100,7 @@ export default function SignUp() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          studentId: formData.studentId,
         }),
       });
 
@@ -61,13 +108,34 @@ export default function SignUp() {
 
       if (!response.ok) {
         setError(data.error || 'Registration failed');
-      } else {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/auth/signin');
-        }, 2000);
+        setLoading(false);
+        return;
       }
-    } catch (error) {
+
+      // If ID card was uploaded, submit verification request
+      if (idCardFile && data.user?.id) {
+        const formDataObj = new FormData();
+        formDataObj.append('idCard', idCardFile);
+        formDataObj.append('studentId', formData.studentId);
+        formDataObj.append('userId', data.user.id);
+
+        const verificationResponse = await fetch('/api/verification/request', {
+          method: 'POST',
+          body: formDataObj,
+        });
+
+        if (!verificationResponse.ok) {
+          console.error('Failed to submit verification request');
+        } else {
+          setNeedsManualVerification(true);
+        }
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/auth/signin');
+      }, 3000);
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -99,7 +167,11 @@ export default function SignUp() {
             <div className="rounded-md bg-green-50 p-6 text-center">
               <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
               <p className="text-lg font-medium text-green-800 mb-2">Account created successfully!</p>
-              <p className="text-sm text-green-700">Redirecting to sign in...</p>
+              {needsManualVerification ? (
+                <p className="text-sm text-green-700">Your verification request has been submitted. A moderator will review it shortly.</p>
+              ) : (
+                <p className="text-sm text-green-700">Redirecting to sign in...</p>
+              )}
             </div>
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -139,6 +211,134 @@ export default function SignUp() {
                     Use @student.sust.edu for automatic verification
                   </p>
                 </div>
+
+                {/* Verification Type Toggle */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Verification Method
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVerificationType('auto');
+                        setIdCardFile(null);
+                        setError('');
+                      }}
+                      className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                        verificationType === 'auto'
+                          ? 'border-red-600 bg-red-50 text-red-700 font-semibold'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center">
+                        <CheckCircle className={`h-5 w-5 mr-2 ${verificationType === 'auto' ? 'text-red-600' : 'text-gray-400'}`} />
+                        <span>Auto Verify</span>
+                      </div>
+                      <p className="text-xs mt-1 opacity-75">University email</p>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVerificationType('manual');
+                        setError('');
+                      }}
+                      className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                        verificationType === 'manual'
+                          ? 'border-red-600 bg-red-50 text-red-700 font-semibold'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center">
+                        <Upload className={`h-5 w-5 mr-2 ${verificationType === 'manual' ? 'text-red-600' : 'text-gray-400'}`} />
+                        <span>Manual Verify</span>
+                      </div>
+                      <p className="text-xs mt-1 opacity-75">Upload ID card</p>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {verificationType === 'auto' 
+                      ? 'Instant verification with @student.sust.edu email'
+                      : 'Requires moderator approval with student ID card'}
+                  </p>
+                  
+                  {/* Warning when selection doesn't match email */}
+                  {formData.email && verificationType === 'auto' && !formData.email.endsWith('@student.sust.edu') && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-xs text-yellow-800">
+                        ⚠️ Your email doesn&apos;t end with @student.sust.edu. Please switch to Manual Verify or use a university email.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {formData.email && verificationType === 'manual' && formData.email.endsWith('@student.sust.edu') && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-xs text-blue-800">
+                        💡 You can use Auto Verify for instant verification with your university email!
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {verificationType === 'manual' && (
+                  <div>
+                    <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1">
+                      Student ID *
+                    </label>
+                    <input
+                      id="studentId"
+                      name="studentId"
+                      type="text"
+                      required
+                      className="input-field"
+                      placeholder="2021XXXXXXX"
+                      value={formData.studentId}
+                      onChange={handleChange}
+                    />
+                  </div>
+                )}
+
+                {verificationType === 'manual' && (
+                  <div>
+                    <label htmlFor="idCard" className="block text-sm font-medium text-gray-700 mb-1">
+                      Student ID Card *
+                    </label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-red-400 transition-colors">
+                      <div className="space-y-1 text-center">
+                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="idCard"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500"
+                          >
+                            <span>Upload a file</span>
+                            <input
+                              id="idCard"
+                              name="idCard"
+                              type="file"
+                              accept="image/*"
+                              className="sr-only"
+                              onChange={handleFileChange}
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 5MB
+                        </p>
+                        {idCardFile && (
+                          <p className="text-sm text-green-600 font-medium mt-2">
+                            ✓ {idCardFile.name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Required for manual verification - moderator will review
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">

@@ -6,7 +6,7 @@ import { VerificationType } from '@prisma/client';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, name } = body;
+    const { email, password, name, studentId } = body;
 
     // Validation
     if (!email || !password || !name) {

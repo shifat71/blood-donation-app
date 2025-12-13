@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { User, Droplet, Calendar, Phone, MapPin, CheckCircle, XCircle, Upload } from 'lucide-react';
+import VerificationUpload from '@/components/VerificationUpload';
+import { User, Droplet, Calendar, Phone, MapPin, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type DonorProfile = {
@@ -30,6 +31,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [showVerificationForm, setShowVerificationForm] = useState(false);
+  const [hasVerificationRequest, setHasVerificationRequest] = useState(false);
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -37,10 +39,6 @@ export default function Dashboard() {
     studentId: '',
     lastDonationDate: '',
     isAvailable: true,
-  });
-  const [verificationData, setVerificationData] = useState({
-    studentId: '',
-    idCardImageUrl: '',
   });
 
   useEffect(() => {
@@ -52,6 +50,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (session) {
       fetchProfile();
+      checkVerificationRequest();
     }
   }, [session]);
 
@@ -77,6 +76,18 @@ export default function Dashboard() {
     }
   };
 
+  const checkVerificationRequest = async () => {
+    try {
+      const response = await fetch('/api/verification/request');
+      if (response.ok) {
+        const data = await response.json();
+        setHasVerificationRequest(!!data);
+      }
+    } catch (error) {
+      console.error('Error checking verification request:', error);
+    }
+  };
+
   const handleCreateOrUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -96,27 +107,6 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error saving profile:', error);
-    }
-  };
-
-  const handleVerificationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const response = await fetch('/api/verification/request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(verificationData),
-      });
-
-      if (response.ok) {
-        setShowVerificationForm(false);
-        alert('Verification request submitted successfully!');
-      }
-    } catch (error) {
-      console.error('Error submitting verification:', error);
     }
   };
 
@@ -155,21 +145,29 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-3">
                   {session.user.isVerified ? (
                     <CheckCircle className="h-6 w-6 text-green-600" />
+                  ) : hasVerificationRequest ? (
+                    <Clock className="h-6 w-6 text-blue-600" />
                   ) : (
                     <XCircle className="h-6 w-6 text-yellow-600" />
                   )}
                   <div>
                     <h3 className="font-semibold text-gray-900">
-                      {session.user.isVerified ? 'Verified Account' : 'Unverified Account'}
+                      {session.user.isVerified 
+                        ? 'Verified Account' 
+                        : hasVerificationRequest 
+                        ? 'Verification Pending' 
+                        : 'Unverified Account'}
                     </h3>
                     <p className="text-sm text-gray-600">
                       {session.user.isVerified 
                         ? 'Your account is verified and active' 
+                        : hasVerificationRequest
+                        ? 'Your verification request is being reviewed by a moderator'
                         : 'Please verify your account to appear in donor search'}
                     </p>
                   </div>
                 </div>
-                {!session.user.isVerified && (
+                {!session.user.isVerified && !hasVerificationRequest && (
                   <button
                     onClick={() => setShowVerificationForm(!showVerificationForm)}
                     className="btn-primary text-sm"
@@ -183,48 +181,11 @@ export default function Dashboard() {
 
           {/* Verification Form */}
           {showVerificationForm && !session?.user.isVerified && (
-            <div className="card mb-6">
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Submit Verification Request</h3>
-              <form onSubmit={handleVerificationSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Student ID
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="input-field"
-                    value={verificationData.studentId}
-                    onChange={(e) => setVerificationData({...verificationData, studentId: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    ID Card Image URL
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    className="input-field"
-                    placeholder="https://example.com/id-card.jpg"
-                    value={verificationData.idCardImageUrl}
-                    onChange={(e) => setVerificationData({...verificationData, idCardImageUrl: e.target.value})}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Upload your ID card to a service like Imgur and paste the URL here</p>
-                </div>
-                <div className="flex space-x-3">
-                  <button type="submit" className="btn-primary">
-                    Submit Request
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowVerificationForm(false)}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+            <div className="mb-6">
+              <VerificationUpload onSuccess={() => {
+                setShowVerificationForm(false);
+                checkVerificationRequest();
+              }} />
             </div>
           )}
 

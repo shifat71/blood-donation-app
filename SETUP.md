@@ -23,50 +23,44 @@ This will install all required packages including Next.js, Prisma, NextAuth, and
 
 ### 2. Set Up Environment Variables
 
-Create a `.env` file in the root directory by copying the example:
+✅ **Good News:** Your `.env` file is already configured with Supabase database credentials!
 
-```bash
-cp .env.example .env
-```
+The app is pre-configured to use your Supabase PostgreSQL database from Vercel.
 
-Edit the `.env` file with your configuration:
+**Verify your `.env` file contains:**
 
 ```env
-# Database Connection
-DATABASE_URL="postgresql://username:password@localhost:5432/blood_donation_db?schema=public"
+# Database - Supabase PostgreSQL
+DATABASE_URL="postgres://postgres.wvaegbjnsimtczsaptgq:PszZsHjXAntEgyZq@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
 
-# NextAuth Configuration
+# Direct URL for migrations
+DIRECT_URL="postgres://postgres.wvaegbjnsimtczsaptgq:PszZsHjXAntEgyZq@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+
+# NextAuth
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_SECRET="rN9GSgZbIIaJ7S0FXCFXTsWKKWuVOe8rZ4HaHKvHk29GTcncIvQ3Nv7nFzYqr3oA9r22z+tM86rEAeLz260jMg=="
 
-# Generate NEXTAUTH_SECRET with: openssl rand -base64 32
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL="https://wvaegbjnsimtczsaptgq.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
-**Important:** Replace the following:
-- `username` and `password` with your PostgreSQL credentials
-- `blood_donation_db` with your preferred database name
-- Generate a secure `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
+📖 **For detailed database setup instructions, see [DATABASE_SETUP.md](./DATABASE_SETUP.md)**
 
-### 3. Set Up PostgreSQL Database
+### 3. Set Up Supabase Database
 
-#### Option A: Create database manually
+✅ **Your Supabase database is already configured!**
 
-```bash
-# Connect to PostgreSQL
-psql -U postgres
+**Your database details:**
+- **Host:** aws-0-us-east-1.pooler.supabase.com
+- **Database:** postgres
+- **Project:** wvaegbjnsimtczsaptgq
+- **Dashboard:** https://wvaegbjnsimtczsaptgq.supabase.co
 
-# Create database
-CREATE DATABASE blood_donation_db;
-
-# Exit PostgreSQL
-\q
-```
-
-#### Option B: Use pgAdmin or another GUI tool
-
-1. Open your PostgreSQL management tool
-2. Create a new database named `blood_donation_db`
-3. Ensure your user has full permissions
+**Important:** If you experience connection issues, please refer to [DATABASE_SETUP.md](./DATABASE_SETUP.md) for:
+- Alternative setup methods using Supabase SQL Editor
+- Troubleshooting network/firewall issues
+- Manual schema creation steps
 
 ### 4. Run Database Migrations
 
