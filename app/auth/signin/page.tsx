@@ -30,7 +30,18 @@ export default function SignIn() {
       if (result?.error) {
         setError('Invalid email or password');
       } else {
-        router.push('/dashboard');
+        // Get the session to check user role
+        const response = await fetch('/api/auth/session');
+        const session = await response.json();
+        
+        // Redirect based on role
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin');
+        } else if (session?.user?.role === 'MODERATOR') {
+          router.push('/moderator');
+        } else {
+          router.push('/dashboard');
+        }
         router.refresh();
       }
     } catch (error) {

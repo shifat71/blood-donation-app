@@ -64,6 +64,18 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // After sign in, redirect based on role
+      // Check if we have a session token to determine role
+      if (url === baseUrl || url === `${baseUrl}/auth/signin`) {
+        return `${baseUrl}/dashboard`;
+      }
+      // Allow callback URLs
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      return baseUrl;
+    },
   },
   pages: {
     signIn: '/auth/signin',
