@@ -44,7 +44,16 @@ export async function POST(request: NextRequest) {
 
     // Determine verification status
     const isUniversityEmail = email.endsWith('@student.sust.edu');
-    const isAutoVerification = verificationType === 'auto' || (isUniversityEmail && verificationType !== 'manual');
+    
+    // Backend validation: Auto verification requires university email
+    if (verificationType === 'auto' && !isUniversityEmail) {
+      return NextResponse.json(
+        { error: 'Auto-verification requires a @student.sust.edu email address' },
+        { status: 400 }
+      );
+    }
+    
+    const isAutoVerification = verificationType === 'auto' && isUniversityEmail;
     
     console.log('[Register] Verification decision:', { isUniversityEmail, isAutoVerification, verificationType });
 

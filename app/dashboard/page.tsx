@@ -68,6 +68,9 @@ export default function Dashboard() {
           lastDonationDate: data.lastDonationDate ? data.lastDonationDate.split('T')[0] : '',
           isAvailable: data.isAvailable,
         });
+      } else if (response.status === 404 && session?.user.isVerified && session?.user.role === 'DONOR') {
+        // Auto-prompt to create profile for verified donors
+        setEditing(true);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);

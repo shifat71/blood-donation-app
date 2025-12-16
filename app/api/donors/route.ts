@@ -10,6 +10,9 @@ export async function GET(request: NextRequest) {
     const bloodGroup = searchParams.get('bloodGroup');
     const availableOnly = searchParams.get('availableOnly') === 'true';
     const search = searchParams.get('search');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
 
     const where: any = {
       user: {
@@ -25,31 +28,44 @@ export async function GET(request: NextRequest) {
       where.isAvailable = true;
     }
 
-    const donors = await prisma.donorProfile.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            isVerified: true,
-          },
-        },
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
-
-    // Filter by name if search query is provided
-    let filteredDonors = donors;
     if (search) {
-      filteredDonors = donors.filter(donor =>
-        donor.user.name.toLowerCase().includes(search.toLowerCase())
-      );
+      where.user = {
+        ...where.user,
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      };
     }
 
-    return NextResponse.json(filteredDonors);
+    const [donors, total] = await Promise.all([
+      prisma.donorProfile.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              isVerified: true,
+            },
+          },
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+        take: limit,
+        skip,
+      }),
+      prisma.donorProfile.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      donors,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      hasMore: skip + donors.length < total,
+    });
   } catch (error) {
     console.error('Error fetching donors:', error);
     return NextResponse.json(
