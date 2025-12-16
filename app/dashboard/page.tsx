@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import VerificationUpload from '@/components/VerificationUpload';
-import { User, Droplet, Calendar, Phone, MapPin, CheckCircle, XCircle, Clock, Camera } from 'lucide-react';
+import { User, Droplet, CheckCircle, XCircle, Clock, Camera } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type DonorProfile = {
@@ -90,8 +90,7 @@ export default function Dashboard() {
           session: data.session || '',
         });
       } else if (response.status === 404 && session?.user.isVerified && session?.user.role === 'DONOR') {
-        // Auto-prompt to create profile for verified donors
-        setEditing(true);
+        // Profile doesn't exist - form will show in create mode
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
