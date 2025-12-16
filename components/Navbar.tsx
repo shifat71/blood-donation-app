@@ -59,16 +59,7 @@ export function Navbar() {
                 )}
 
                 <div className="flex items-center space-x-3">
-                  {session.user.role === 'DONOR' ? (
-                    <Link
-                      href="/dashboard"
-                      className="text-sm text-gray-700 hover:text-red-600 font-medium"
-                    >
-                      {session.user.name}
-                    </Link>
-                  ) : (
-                    <span className="text-sm text-gray-700">{session.user.name}</span>
-                  )}
+                  <span className="text-sm text-gray-700 font-medium">{session.user.name}</span>
                   <button
                     onClick={() => signOut({ callbackUrl: '/' })}
                     className="btn-secondary text-sm"
@@ -146,17 +137,7 @@ export function Navbar() {
                 )}
 
                 <div className="px-3 py-2">
-                  {session.user.role === 'DONOR' ? (
-                    <Link
-                      href="/dashboard"
-                      className="text-sm text-gray-700 hover:text-red-600 font-medium block mb-2"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {session.user.name}
-                    </Link>
-                  ) : (
-                    <p className="text-sm text-gray-700 mb-2">{session.user.name}</p>
-                  )}
+                  <p className="text-sm text-gray-700 font-medium mb-2">{session.user.name}</p>
                   <button
                     onClick={() => {
                       signOut({ callbackUrl: '/' });

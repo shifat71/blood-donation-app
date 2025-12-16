@@ -175,7 +175,13 @@ export async function PUT(request: NextRequest) {
     // Determine availability: use manual setting if provided, otherwise auto-calculate only when donation date changes
     let finalAvailability = existingProfile.isAvailable;
     if (isAvailable !== undefined) {
-      // Manual override
+      // Manual override - but can't set to available if within 90 days of last donation
+      if (isAvailable === true && !autoAvailability) {
+        return NextResponse.json(
+          { error: 'Cannot mark as available. Must wait 90 days after last donation or be in Sylhet.' },
+          { status: 400 }
+        );
+      }
       finalAvailability = isAvailable;
     } else if (lastDonationDate !== undefined) {
       // Auto-calculate when donation date is updated

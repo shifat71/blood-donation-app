@@ -229,6 +229,12 @@ export default function Dashboard() {
   const handleToggleAvailability = async () => {
     if (!profile) return;
     
+    // Prevent marking as available if within 90 days
+    if (!profile.isAvailable && !canDonateAgain()) {
+      alert(`You must wait ${90 - (getDaysSinceLastDonation() || 0)} more days after your last donation to become available.`);
+      return;
+    }
+    
     try {
       const response = await fetch('/api/donor/profile', {
         method: 'PUT',
@@ -710,7 +716,8 @@ export default function Dashboard() {
                       </button>
                       <button
                         onClick={handleToggleAvailability}
-                        className={`w-full font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all border-2 flex items-center justify-center gap-2 ${
+                        disabled={!profile.isAvailable && !canDonateAgain()}
+                        className={`w-full font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all border-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                           profile.isAvailable
                             ? 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-300'
                             : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-300'
@@ -719,6 +726,11 @@ export default function Dashboard() {
                         {profile.isAvailable ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
                         {profile.isAvailable ? 'Mark Unavailable' : 'Mark Available'}
                       </button>
+                      {!profile.isAvailable && !canDonateAgain() && (
+                        <p className="text-xs text-amber-600 text-center mt-2 bg-amber-50 p-2 rounded-lg">
+                          ⚠️ Must wait {90 - (getDaysSinceLastDonation() || 0)} more days to become available
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1038,7 +1050,8 @@ export default function Dashboard() {
                       </div>
                       <button
                         onClick={handleToggleAvailability}
-                        className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg border-2 ${
+                        disabled={!profile?.isAvailable && !canDonateAgain()}
+                        className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                           profile?.isAvailable
                             ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-300'
                             : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-300'
@@ -1046,9 +1059,15 @@ export default function Dashboard() {
                       >
                         {profile?.isAvailable ? '⊘ Mark as Unavailable' : '✓ Mark as Available'}
                       </button>
-                      <p className="text-xs text-gray-600 mt-3 text-center bg-blue-50 p-3 rounded-lg">
-                        💡 Update your status if you&apos;re temporarily unavailable (e.g., left the city, health issues)
-                      </p>
+                      {!profile?.isAvailable && !canDonateAgain() ? (
+                        <p className="text-xs text-amber-600 mt-3 text-center bg-amber-50 p-3 rounded-lg">
+                          ⚠️ Must wait {90 - (getDaysSinceLastDonation() || 0)} more days to become available
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-600 mt-3 text-center bg-blue-50 p-3 rounded-lg">
+                          💡 Update your status if you&apos;re temporarily unavailable (e.g., left the city, health issues)
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
