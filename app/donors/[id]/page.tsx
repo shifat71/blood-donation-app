@@ -71,8 +71,8 @@ export default function DonorProfilePage() {
   }, [params.id]);
 
   useEffect(() => {
-    // Redirect to dashboard if viewing own profile
-    if (donor && session?.user?.id === donor.userId) {
+    // Redirect to dashboard if viewing own profile (only for donors)
+    if (donor && session?.user?.id === donor.userId && session?.user?.role === 'DONOR') {
       router.push('/dashboard');
     }
   }, [donor, session, router]);

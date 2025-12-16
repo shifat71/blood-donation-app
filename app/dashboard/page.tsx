@@ -93,9 +93,6 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('donorProfileId', data.id);
-        }
         setFormData({
           bloodGroup: data.bloodGroup,
           phoneNumber: data.phoneNumber || '',

@@ -35,14 +35,7 @@ export default function Donors() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
-  const [currentUserProfileId, setCurrentUserProfileId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      const storedProfileId = localStorage.getItem('donorProfileId');
-      setCurrentUserProfileId(storedProfileId);
-    }
-  }, [session]);
 
   const bloodGroups = Object.values(BloodGroup);
 
@@ -186,8 +179,8 @@ export default function Donors() {
                 <div 
                   key={donor.id} 
                   onClick={() => {
-                    // If clicking on own profile, go to dashboard instead
-                    if (donor.id === currentUserProfileId) {
+                    // If clicking on own profile and user is a donor, go to dashboard instead
+                    if (donor.user.email === session?.user?.email && session?.user?.role === 'DONOR') {
                       router.push('/dashboard');
                     } else {
                       router.push(`/donors/${donor.id}`);
