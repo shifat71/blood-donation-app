@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Droplet } from 'lucide-react';
+import { Droplet, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function SignIn() {
   const router = useRouter();
@@ -56,23 +56,23 @@ export default function SignIn() {
       <Navbar />
       
       <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <div className="flex justify-center">
-              <Droplet className="h-12 w-12 text-red-600" />
+        <div className="max-w-md w-full">
+          <div className="card">
+            <div className="text-center mb-8">
+              <div className="flex justify-center">
+                <div className="bg-red-100 p-3 rounded-full">
+                  <Droplet className="h-10 w-10 text-red-600" />
+                </div>
+              </div>
+              <h2 className="mt-4 text-2xl font-bold text-gray-900">
+                Welcome Back
+              </h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Sign in to your account to continue
+              </p>
             </div>
-            <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-              Sign in to your account
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Or{' '}
-              <Link href="/auth/signup" className="font-medium text-red-600 hover:text-red-500">
-                create a new account
-              </Link>
-            </p>
-          </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm space-y-4">
+            
+            <form className="space-y-5" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email address
@@ -105,24 +105,39 @@ export default function SignIn() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-            </div>
 
-            {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
+              {error && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                  <p className="text-sm text-red-800 font-medium">{error}</p>
+                </div>
+              )}
 
-            <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full text-lg"
+                className="btn-primary w-full text-lg flex items-center justify-center gap-2"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
               </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Don&apos;t have an account?{' '}
+                <Link href="/auth/signup" className="font-semibold text-red-600 hover:text-red-500 transition-colors">
+                  Create one now
+                </Link>
+              </p>
             </div>
-          </form>
+          </div>
         </div>
       </main>
 

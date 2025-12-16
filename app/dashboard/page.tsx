@@ -273,24 +273,28 @@ export default function Dashboard() {
           </div>
 
           {successMessage && (
-            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <p className="text-green-800 font-medium">{successMessage}</p>
+            <div className="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-4 flex items-center gap-3 shadow-sm animate-pulse">
+              <div className="bg-green-100 p-2 rounded-full">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <p className="text-green-800 font-semibold">{successMessage}</p>
             </div>
           )}
 
           {/* Verification Status */}
           {session?.user && (
-            <div className={`card mb-6 ${session.user.isVerified ? 'border-green-500' : 'border-yellow-500'}`}>
+            <div className={`card mb-6 border-l-4 ${session.user.isVerified ? 'border-l-green-500' : hasVerificationRequest ? 'border-l-blue-500' : 'border-l-yellow-500'}`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {session.user.isVerified ? (
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                  ) : hasVerificationRequest ? (
-                    <Clock className="h-6 w-6 text-blue-600" />
-                  ) : (
-                    <XCircle className="h-6 w-6 text-yellow-600" />
-                  )}
+                <div className="flex items-center space-x-4">
+                  <div className={`p-3 rounded-full ${session.user.isVerified ? 'bg-green-100' : hasVerificationRequest ? 'bg-blue-100' : 'bg-yellow-100'}`}>
+                    {session.user.isVerified ? (
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    ) : hasVerificationRequest ? (
+                      <Clock className="h-6 w-6 text-blue-600" />
+                    ) : (
+                      <XCircle className="h-6 w-6 text-yellow-600" />
+                    )}
+                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">
                       {session.user.isVerified 
