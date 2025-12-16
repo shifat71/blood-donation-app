@@ -10,6 +10,7 @@ import { BloodGroup } from '@prisma/client';
 
 type DonorProfile = {
   id: string;
+  userId: string;
   bloodGroup: BloodGroup;
   lastDonationDate: string | null;
   isAvailable: boolean;
@@ -18,6 +19,9 @@ type DonorProfile = {
   studentId: string | null;
   profilePicture: string | null;
   createdAt: string;
+  currentDistrict: string | null;
+  department: string | null;
+  session: string | null;
   user: {
     name: string;
     email: string;
@@ -244,7 +248,7 @@ export default function DonorProfilePage() {
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                 <p className="text-gray-600">No donation history available</p>
-                <p className="text-sm text-gray-500 mt-1">This donor hasn't recorded any donations yet</p>
+                <p className="text-sm text-gray-500 mt-1">This donor hasn&apos;t recorded any donations yet</p>
               </div>
             )}
           </div>
@@ -274,7 +278,7 @@ export default function DonorProfilePage() {
               <div className="grid grid-cols-3 gap-1">
                 {posts.map((post) => (
                   <div key={post.id} className="aspect-square">
-                    <img src={post.imageUrl} alt={post.caption || ''} className="w-full h-full object-cover" />
+                    <img src={post.imageUrl} alt={post.caption || 'Post'} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

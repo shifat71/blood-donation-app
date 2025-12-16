@@ -17,6 +17,10 @@ type DonorProfile = {
   phoneNumber: string | null;
   address: string | null;
   studentId: string | null;
+  profilePicture: string | null;
+  currentDistrict: string | null;
+  department: string | null;
+  session: string | null;
   user: {
     name: string;
     email: string;
