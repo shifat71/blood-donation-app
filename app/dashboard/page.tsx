@@ -37,6 +37,8 @@ export default function Dashboard() {
   const [showVerificationForm, setShowVerificationForm] = useState(false);
   const [hasVerificationRequest, setHasVerificationRequest] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showDonationDateUpdate, setShowDonationDateUpdate] = useState(false);
+  const [newDonationDate, setNewDonationDate] = useState('');
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -136,6 +138,34 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('Error saving profile. Check console.');
+    }
+  };
+
+  const handleUpdateDonationDate = async () => {
+    if (!newDonationDate) return;
+    
+    try {
+      const response = await fetch('/api/donor/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ lastDonationDate: newDonationDate }),
+      });
+
+      if (response.ok) {
+        await fetchProfile();
+        setShowDonationDateUpdate(false);
+        setNewDonationDate('');
+        setSuccessMessage('Donation date updated successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        const data = await response.json();
+        alert('Error: ' + (data.error || 'Failed to update donation date'));
+      }
+    } catch (error) {
+      console.error('Error updating donation date:', error);
+      alert('Error updating donation date. Check console.');
     }
   };
 
@@ -485,6 +515,48 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
+
+                {/* Update Last Donation Date Section */}
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Record New Donation</span>
+                    <button
+                      onClick={() => {
+                        setShowDonationDateUpdate(!showDonationDateUpdate);
+                        setNewDonationDate(new Date().toISOString().split('T')[0]);
+                      }}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    >
+                      {showDonationDateUpdate ? 'Cancel' : '+ Update Date'}
+                    </button>
+                  </div>
+                  {showDonationDateUpdate && (
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                          When did you donate?
+                        </label>
+                        <input
+                          type="date"
+                          className="input-field"
+                          value={newDonationDate}
+                          max={new Date().toISOString().split('T')[0]}
+                          onChange={(e) => setNewDonationDate(e.target.value)}
+                        />
+                      </div>
+                      <button
+                        onClick={handleUpdateDonationDate}
+                        disabled={!newDonationDate}
+                        className="btn-primary w-full text-sm"
+                      >
+                        Save Donation Date
+                      </button>
+                      <p className="text-xs text-gray-500 text-center">
+                        Your availability will be auto-updated based on the 90-day donation cycle
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 <div className="pt-4 border-t">
                   <div className="flex items-center justify-between">
