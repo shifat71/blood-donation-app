@@ -350,7 +350,7 @@ export default function Dashboard() {
               <h3 className="text-xl font-semibold mb-6 text-gray-900">
                 {profile ? 'Edit Profile' : 'Create Profile'}
               </h3>
-              <form onSubmit={handleCreateOrUpdateProfile} className="space-y-4">
+              <form onSubmit={handleCreateOrUpdateProfile} className="space-y-5">
                 {/* Modern Profile Picture Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -358,7 +358,7 @@ export default function Dashboard() {
                   </label>
                   <div className="flex items-center gap-6">
                     <div className="relative group">
-                      <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
+                      <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 border-3 border-gray-200 flex items-center justify-center shadow-md">
                         {formData.profilePicture ? (
                           <Image
                             src={formData.profilePicture}
@@ -366,6 +366,7 @@ export default function Dashboard() {
                             width={96}
                             height={96}
                             className="w-full h-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           <User className="w-12 h-12 text-gray-400" />
@@ -373,7 +374,7 @@ export default function Dashboard() {
                       </div>
                       <label
                         htmlFor="profile-picture-edit"
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-200"
                       >
                         <Camera className="w-6 h-6 text-white" />
                       </label>
@@ -580,7 +581,7 @@ export default function Dashboard() {
               {/* Profile Picture Section */}
               <div className="flex justify-center mb-6">
                 <div className="relative group">
-                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-red-100 to-red-200 border-4 border-white shadow-lg flex items-center justify-center">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-red-100 to-red-200 border-4 border-white shadow-xl flex items-center justify-center">
                     {profile?.profilePicture ? (
                       <Image
                         src={profile.profilePicture}
@@ -588,6 +589,7 @@ export default function Dashboard() {
                         width={128}
                         height={128}
                         className="w-full h-full object-cover"
+                        unoptimized
                       />
                     ) : (
                       <User className="w-16 h-16 text-red-400" />
@@ -595,14 +597,17 @@ export default function Dashboard() {
                   </div>
                   <label
                     htmlFor="profile-picture-upload"
-                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-200"
+                    className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300"
                   >
                     {uploadingPhoto ? (
-                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-3 border-white border-t-transparent mx-auto"></div>
+                        <span className="text-xs text-white mt-2 block font-medium">Uploading...</span>
+                      </div>
                     ) : (
                       <div className="text-center">
                         <Camera className="w-8 h-8 text-white mx-auto" />
-                        <span className="text-xs text-white mt-1 block">Change Photo</span>
+                        <span className="text-xs text-white mt-1 block font-medium">Change Photo</span>
                       </div>
                     )}
                   </label>
@@ -614,6 +619,12 @@ export default function Dashboard() {
                     disabled={uploadingPhoto}
                     onChange={handleProfilePictureUpload}
                   />
+                  {/* Upload status indicator */}
+                  {uploadingPhoto && (
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-3 py-1 rounded-full shadow-lg">
+                      Uploading...
+                    </div>
+                  )}
                 </div>
               </div>
 
