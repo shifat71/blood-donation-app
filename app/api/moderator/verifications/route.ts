@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
+    console.log('[Moderator API] GET - Session:', session?.user?.email, 'Role:', session?.user?.role);
+
     if (!session || (session.user.role !== Role.MODERATOR && session.user.role !== Role.ADMIN)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
@@ -27,6 +29,8 @@ export async function GET(request: NextRequest) {
       },
       orderBy: { createdAt: 'asc' },
     });
+
+    console.log('[Moderator API] Found', verificationRequests.length, 'pending requests');
 
     return NextResponse.json(verificationRequests);
   } catch (error) {

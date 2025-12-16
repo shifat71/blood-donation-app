@@ -90,7 +90,7 @@ export default function SignUp() {
     }
 
     try {
-      // Register user
+      // Register user with verification type
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -101,6 +101,7 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           studentId: formData.studentId,
+          verificationType: verificationType,
         }),
       });
 
@@ -112,8 +113,12 @@ export default function SignUp() {
         return;
       }
 
-      // If ID card was uploaded, submit verification request
-      if (idCardFile && data.user?.id) {
+      console.log('[Signup] User created:', data.user?.id);
+
+      // If manual verification, submit verification request with ID card
+      if (verificationType === 'manual' && idCardFile && data.user?.id) {
+        console.log('[Signup] Submitting verification request...');
+        
         const formDataObj = new FormData();
         formDataObj.append('idCard', idCardFile);
         formDataObj.append('studentId', formData.studentId);
@@ -125,20 +130,21 @@ export default function SignUp() {
             body: formDataObj,
           });
 
+          const verificationData = await verificationResponse.json();
+          console.log('[Signup] Verification response:', verificationData);
+
           if (!verificationResponse.ok) {
-            const errorData = await verificationResponse.json();
-            console.error('Failed to submit verification request:', errorData);
-            setError(`Account created but verification request failed: ${errorData.error || 'Unknown error'}`);
-            setLoading(false);
-            return;
+            console.error('Failed to submit verification request:', verificationData);
+            // Don't fail the whole signup, just notify the user
+            setNeedsManualVerification(true);
+            setError(`Account created! Note: ${verificationData.error || 'Verification request had an issue'}. You can resubmit from your dashboard.`);
           } else {
             setNeedsManualVerification(true);
+            console.log('[Signup] Verification request submitted successfully');
           }
         } catch (verificationError) {
           console.error('Error submitting verification:', verificationError);
-          setError('Account created but failed to submit verification request. Please submit from your dashboard.');
-          setLoading(false);
-          return;
+          setNeedsManualVerification(true);
         }
       }
 

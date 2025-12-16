@@ -46,13 +46,19 @@ export default function ModeratorDashboard() {
 
   const fetchRequests = async () => {
     try {
+      console.log('[Moderator] Fetching verification requests...');
       const response = await fetch('/api/moderator/verifications');
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[Moderator] Received requests:', data.length);
         setRequests(data);
+      } else {
+        const errorData = await response.json();
+        console.error('[Moderator] Error response:', errorData);
       }
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      console.error('[Moderator] Error fetching requests:', error);
     } finally {
       setLoading(false);
     }
@@ -60,6 +66,7 @@ export default function ModeratorDashboard() {
 
   const handleVerification = async (requestId: string, status: VerificationStatus) => {
     try {
+      console.log('[Moderator] Updating verification:', requestId, status);
       const response = await fetch('/api/moderator/verifications', {
         method: 'PUT',
         headers: {
@@ -73,12 +80,16 @@ export default function ModeratorDashboard() {
       });
 
       if (response.ok) {
+        console.log('[Moderator] Verification updated successfully');
         await fetchRequests();
         setSelectedRequest(null);
         setReason('');
+      } else {
+        const errorData = await response.json();
+        console.error('[Moderator] Update failed:', errorData);
       }
     } catch (error) {
-      console.error('Error updating verification:', error);
+      console.error('[Moderator] Error updating verification:', error);
     }
   };
 
@@ -103,9 +114,23 @@ export default function ModeratorDashboard() {
       
       <main className="flex-grow bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Moderator Dashboard</h1>
-            <p className="text-gray-600 mt-2">Review and approve verification requests</p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Moderator Dashboard</h1>
+              <p className="text-gray-600 mt-2">Review and approve verification requests</p>
+            </div>
+            <button
+              onClick={() => {
+                setLoading(true);
+                fetchRequests();
+              }}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
           </div>
 
           {/* Stats */}

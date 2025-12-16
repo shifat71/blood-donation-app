@@ -6,7 +6,9 @@ import { VerificationType } from '@prisma/client';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, name, studentId } = body;
+    const { email, password, name, studentId, verificationType } = body;
+
+    console.log('[Register] Request received:', { email, name, studentId, verificationType });
 
     // Validation
     if (!email || !password || !name) {
@@ -40,8 +42,11 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Check if email ends with @student.sust.edu for auto-verification
+    // Determine verification status
     const isUniversityEmail = email.endsWith('@student.sust.edu');
+    const isAutoVerification = verificationType === 'auto' || (isUniversityEmail && verificationType !== 'manual');
+    
+    console.log('[Register] Verification decision:', { isUniversityEmail, isAutoVerification, verificationType });
 
     // Create user
     const user = await prisma.user.create({
@@ -49,27 +54,30 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         name,
-        isVerified: isUniversityEmail,
-        verificationType: isUniversityEmail ? VerificationType.AUTO : null,
+        isVerified: isAutoVerification && isUniversityEmail,
+        verificationType: isAutoVerification ? VerificationType.AUTO : VerificationType.MANUAL,
       },
     });
 
+    console.log('[Register] User created:', user.id, 'isVerified:', user.isVerified);
+
     return NextResponse.json(
       {
-        message: isUniversityEmail
+        message: user.isVerified
           ? 'Account created and verified successfully'
-          : 'Account created. Please submit verification request.',
+          : 'Account created. Awaiting verification.',
         user: {
           id: user.id,
           email: user.email,
           name: user.name,
           isVerified: user.isVerified,
+          verificationType: user.verificationType,
         },
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('[Register] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
