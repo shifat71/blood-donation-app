@@ -17,6 +17,10 @@ type DonorProfile = {
   phoneNumber: string | null;
   address: string | null;
   studentId: string | null;
+  profilePicture: string | null;
+  currentDistrict: string | null;
+  department: string | null;
+  session: string | null;
   user: {
     name: string;
     email: string;
@@ -32,6 +36,7 @@ export default function Dashboard() {
   const [editing, setEditing] = useState(false);
   const [showVerificationForm, setShowVerificationForm] = useState(false);
   const [hasVerificationRequest, setHasVerificationRequest] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -39,6 +44,10 @@ export default function Dashboard() {
     studentId: '',
     lastDonationDate: '',
     isAvailable: true,
+    profilePicture: '',
+    currentDistrict: 'Sylhet',
+    department: '',
+    session: '',
   });
 
   useEffect(() => {
@@ -61,6 +70,9 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('donorProfileId', data.id);
+        }
         setFormData({
           bloodGroup: data.bloodGroup,
           phoneNumber: data.phoneNumber || '',
@@ -68,6 +80,10 @@ export default function Dashboard() {
           studentId: data.studentId || '',
           lastDonationDate: data.lastDonationDate ? data.lastDonationDate.split('T')[0] : '',
           isAvailable: data.isAvailable,
+          profilePicture: data.profilePicture || '',
+          currentDistrict: data.currentDistrict || 'Sylhet',
+          department: data.department || '',
+          session: data.session || '',
         });
       } else if (response.status === 404 && session?.user.isVerified && session?.user.role === 'DONOR') {
         // Auto-prompt to create profile for verified donors
@@ -97,6 +113,7 @@ export default function Dashboard() {
     
     try {
       const method = profile ? 'PUT' : 'POST';
+      console.log('Saving profile:', formData);
       const response = await fetch('/api/donor/profile', {
         method,
         headers: {
@@ -105,12 +122,20 @@ export default function Dashboard() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      console.log('Response:', response.status, data);
+
       if (response.ok) {
         await fetchProfile();
         setEditing(false);
+        setSuccessMessage('Profile saved successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to save profile'));
       }
     } catch (error) {
       console.error('Error saving profile:', error);
+      alert('Error saving profile. Check console.');
     }
   };
 
@@ -141,6 +166,13 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Donor Dashboard</h1>
             <p className="text-gray-600 mt-2">Manage your donor profile and availability</p>
           </div>
+
+          {successMessage && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <p className="text-green-800 font-medium">{successMessage}</p>
+            </div>
+          )}
 
           {/* Verification Status */}
           {session?.user && (
@@ -216,6 +248,27 @@ export default function Dashboard() {
               <form onSubmit={handleCreateOrUpdateProfile} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile Picture
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="input-field"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => {
+                          setFormData({...formData, profilePicture: reader.result as string});
+                        };
+                      }
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Blood Group *
                   </label>
                   <select
@@ -281,6 +334,52 @@ export default function Dashboard() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Current District
+                  </label>
+                  <select
+                    className="input-field"
+                    value={formData.currentDistrict}
+                    onChange={(e) => setFormData({...formData, currentDistrict: e.target.value})}
+                  >
+                    <option value="Sylhet">Sylhet</option>
+                    <option value="Dhaka">Dhaka</option>
+                    <option value="Chittagong">Chittagong</option>
+                    <option value="Rajshahi">Rajshahi</option>
+                    <option value="Khulna">Khulna</option>
+                    <option value="Barisal">Barisal</option>
+                    <option value="Rangpur">Rangpur</option>
+                    <option value="Mymensingh">Mymensingh</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Department
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="e.g., CSE, EEE, BBA"
+                    value={formData.department}
+                    onChange={(e) => setFormData({...formData, department: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Session
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="e.g., 2023-2024"
+                    value={formData.session}
+                    onChange={(e) => setFormData({...formData, session: e.target.value})}
+                  />
+                </div>
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -313,7 +412,23 @@ export default function Dashboard() {
               <div className="flex justify-between items-start mb-6">
                 <h3 className="text-xl font-semibold text-gray-900">Your Profile</h3>
                 <button
-                  onClick={() => setEditing(true)}
+                  onClick={() => {
+                    if (profile) {
+                      setFormData({
+                        bloodGroup: profile.bloodGroup,
+                        phoneNumber: profile.phoneNumber || '',
+                        address: profile.address || '',
+                        studentId: profile.studentId || '',
+                        lastDonationDate: profile.lastDonationDate ? profile.lastDonationDate.split('T')[0] : '',
+                        isAvailable: profile.isAvailable,
+                        profilePicture: profile.profilePicture || '',
+                        currentDistrict: profile.currentDistrict || 'Sylhet',
+                        department: profile.department || '',
+                        session: profile.session || '',
+                      });
+                    }
+                    setEditing(true);
+                  }}
                   className="btn-secondary text-sm"
                 >
                   Edit Profile
