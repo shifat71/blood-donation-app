@@ -1054,9 +1054,144 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-          )}
+            )}
+
+            {/* Posts Tab */}
+            {activeTab === 'posts' && profile && (
+              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                      <Grid3x3 className="h-7 w-7 text-red-600" />
+                      My Posts
+                    </h3>
+                    <p className="text-gray-500 mt-1">Share your donation journey</p>
+                  </div>
+                  <button
+                    onClick={() => setShowUpload(true)}
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add Post
+                  </button>
+                </div>
+
+                {posts.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {posts.map((post) => (
+                      <div key={post.id} className="group relative aspect-square rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all">
+                        <Image 
+                          src={post.imageUrl} 
+                          alt={post.caption || 'Post'} 
+                          fill 
+                          className="object-cover group-hover:scale-110 transition-transform duration-300" 
+                          unoptimized 
+                        />
+                        {post.caption && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-white text-sm line-clamp-2">{post.caption}</p>
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-gray-700">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-red-50/30 rounded-2xl border-2 border-dashed border-gray-300">
+                    <Grid3x3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 font-semibold mb-2">No posts yet</p>
+                    <p className="text-sm text-gray-500 mb-4">Share your donation experience with the community</p>
+                    <button
+                      onClick={() => setShowUpload(true)}
+                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2"
+                    >
+                      <Plus className="w-5 h-5" />
+                      Upload Your First Post
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </main>
+
+      {/* Upload Post Modal */}
+      {showUpload && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Upload Post</h3>
+              <button 
+                onClick={() => {
+                  setShowUpload(false);
+                  setImageFile(null);
+                  setCaption('');
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Choose Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onload = () => setImageFile(reader.result as string);
+                    }
+                  }}
+                />
+              </div>
+
+              {imageFile && (
+                <div className="relative w-full h-64 rounded-xl overflow-hidden bg-gray-100">
+                  <Image 
+                    src={imageFile} 
+                    alt="Preview" 
+                    fill 
+                    className="object-cover" 
+                    unoptimized 
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Caption (optional)
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Share your experience..."
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <button 
+                onClick={handleUploadPost} 
+                disabled={!imageFile}
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {imageFile ? 'Upload Post' : 'Select an Image First'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

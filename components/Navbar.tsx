@@ -3,20 +3,11 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { Droplet, Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export function Navbar() {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileId, setProfileId] = useState('');
-
-  useEffect(() => {
-    if (session?.user.role === 'DONOR') {
-      fetch('/api/donor/profile')
-        .then(res => res.ok ? res.json() : null)
-        .then(data => data && setProfileId(data.id));
-    }
-  }, [session]);
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -68,9 +59,9 @@ export function Navbar() {
                 )}
 
                 <div className="flex items-center space-x-3">
-                  {session.user.role === 'DONOR' && profileId ? (
+                  {session.user.role === 'DONOR' ? (
                     <Link
-                      href={`/donors/${profileId}`}
+                      href="/dashboard"
                       className="text-sm text-gray-700 hover:text-red-600 font-medium"
                     >
                       {session.user.name}
@@ -155,9 +146,9 @@ export function Navbar() {
                 )}
 
                 <div className="px-3 py-2">
-                  {session.user.role === 'DONOR' && profileId ? (
+                  {session.user.role === 'DONOR' ? (
                     <Link
-                      href={`/donors/${profileId}`}
+                      href="/dashboard"
                       className="text-sm text-gray-700 hover:text-red-600 font-medium block mb-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >

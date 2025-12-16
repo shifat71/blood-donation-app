@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -24,6 +25,7 @@ type Donor = {
 
 export default function Donors() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -33,6 +35,14 @@ export default function Donors() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
+  const [currentUserProfileId, setCurrentUserProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      const storedProfileId = localStorage.getItem('donorProfileId');
+      setCurrentUserProfileId(storedProfileId);
+    }
+  }, [session]);
 
   const bloodGroups = Object.values(BloodGroup);
 
@@ -175,7 +185,14 @@ export default function Donors() {
               {donors.map((donor) => (
                 <div 
                   key={donor.id} 
-                  onClick={() => router.push(`/donors/${donor.id}`)}
+                  onClick={() => {
+                    // If clicking on own profile, go to dashboard instead
+                    if (donor.id === currentUserProfileId) {
+                      router.push('/dashboard');
+                    } else {
+                      router.push(`/donors/${donor.id}`);
+                    }
+                  }}
                   className="card hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <div className="flex items-start gap-4 mb-4">

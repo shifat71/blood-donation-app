@@ -71,6 +71,13 @@ export default function DonorProfilePage() {
   }, [params.id]);
 
   useEffect(() => {
+    // Redirect to dashboard if viewing own profile
+    if (donor && session?.user?.id === donor.userId) {
+      router.push('/dashboard');
+    }
+  }, [donor, session, router]);
+
+  useEffect(() => {
     if (donor) fetchPosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [donor]);
