@@ -54,7 +54,8 @@ export async function PUT(
       address, 
       studentId, 
       lastDonationDate, 
-      isAvailable, 
+      isAvailable,
+      profilePicture, 
       currentDistrict, 
       department, 
       session: academicSession,
@@ -71,6 +72,17 @@ export async function PUT(
       return NextResponse.json({ error: 'Donor profile not found' }, { status: 404 });
     }
 
+    // Upload profile picture to Cloudinary if provided
+    let uploadedImageUrl = existingProfile.profilePicture;
+    if (profilePicture && profilePicture !== existingProfile.profilePicture) {
+      try {
+        const { uploadToCloudinary } = await import('@/lib/cloudinary');
+        uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
+      } catch (error) {
+        console.error('Cloudinary upload failed:', error);
+      }
+    }
+
     // Update donor profile
     const updatedProfile = await prisma.donorProfile.update({
       where: { id },
@@ -83,6 +95,7 @@ export async function PUT(
           lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null 
         }),
         ...(isAvailable !== undefined && { isAvailable }),
+        ...(uploadedImageUrl && { profilePicture: uploadedImageUrl }),
         ...(currentDistrict !== undefined && { currentDistrict }),
         ...(department !== undefined && { department }),
         ...(academicSession !== undefined && { session: academicSession }),
