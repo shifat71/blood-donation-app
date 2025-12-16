@@ -3,10 +3,11 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import VerificationUpload from '@/components/VerificationUpload';
-import { User, Droplet, Calendar, Phone, MapPin, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { User, Droplet, Calendar, Phone, MapPin, CheckCircle, XCircle, Clock, Camera } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type DonorProfile = {
@@ -39,6 +40,7 @@ export default function Dashboard() {
   const [successMessage, setSuccessMessage] = useState('');
   const [showDonationDateUpdate, setShowDonationDateUpdate] = useState(false);
   const [newDonationDate, setNewDonationDate] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -169,6 +171,79 @@ export default function Dashboard() {
     }
   };
 
+  const handleToggleAvailability = async () => {
+    if (!profile) return;
+    
+    try {
+      const response = await fetch('/api/donor/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isAvailable: !profile.isAvailable }),
+      });
+
+      if (response.ok) {
+        await fetchProfile();
+        setSuccessMessage(`Availability updated to ${!profile.isAvailable ? 'Available' : 'Unavailable'}!`);
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        const data = await response.json();
+        alert('Error: ' + (data.error || 'Failed to update availability'));
+      }
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      alert('Error updating availability. Check console.');
+    }
+  };
+
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        const response = await fetch('/api/donor/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ profilePicture: base64 }),
+        });
+
+        if (response.ok) {
+          await fetchProfile();
+          setSuccessMessage('Profile picture updated successfully!');
+          setTimeout(() => setSuccessMessage(''), 3000);
+        } else {
+          const data = await response.json();
+          alert('Error: ' + (data.error || 'Failed to upload profile picture'));
+        }
+        setUploadingPhoto(false);
+      };
+      reader.onerror = () => {
+        alert('Error reading file');
+        setUploadingPhoto(false);
+      };
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Error uploading profile picture');
+      setUploadingPhoto(false);
+    }
+  };
+
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen flex flex-col">
@@ -276,25 +351,62 @@ export default function Dashboard() {
                 {profile ? 'Edit Profile' : 'Create Profile'}
               </h3>
               <form onSubmit={handleCreateOrUpdateProfile} className="space-y-4">
+                {/* Modern Profile Picture Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     Profile Picture
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="input-field"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = () => {
-                          setFormData({...formData, profilePicture: reader.result as string});
-                        };
-                      }
-                    }}
-                  />
+                  <div className="flex items-center gap-6">
+                    <div className="relative group">
+                      <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
+                        {formData.profilePicture ? (
+                          <Image
+                            src={formData.profilePicture}
+                            alt="Profile preview"
+                            width={96}
+                            height={96}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-12 h-12 text-gray-400" />
+                        )}
+                      </div>
+                      <label
+                        htmlFor="profile-picture-edit"
+                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                      >
+                        <Camera className="w-6 h-6 text-white" />
+                      </label>
+                      <input
+                        id="profile-picture-edit"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            reader.onload = () => {
+                              setFormData({...formData, profilePicture: reader.result as string});
+                            };
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Upload a clear photo of yourself
+                      </p>
+                      <label
+                        htmlFor="profile-picture-edit"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 cursor-pointer transition-colors"
+                      >
+                        <Camera className="w-4 h-4" />
+                        Choose Photo
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -465,6 +577,46 @@ export default function Dashboard() {
                 </button>
               </div>
 
+              {/* Profile Picture Section */}
+              <div className="flex justify-center mb-6">
+                <div className="relative group">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-red-100 to-red-200 border-4 border-white shadow-lg flex items-center justify-center">
+                    {profile?.profilePicture ? (
+                      <Image
+                        src={profile.profilePicture}
+                        alt={profile.user.name || 'Profile'}
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-16 h-16 text-red-400" />
+                    )}
+                  </div>
+                  <label
+                    htmlFor="profile-picture-upload"
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-200"
+                  >
+                    {uploadingPhoto ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                    ) : (
+                      <div className="text-center">
+                        <Camera className="w-8 h-8 text-white mx-auto" />
+                        <span className="text-xs text-white mt-1 block">Change Photo</span>
+                      </div>
+                    )}
+                  </label>
+                  <input
+                    id="profile-picture-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingPhoto}
+                    onChange={handleProfilePictureUpload}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <User className="h-5 w-5 text-gray-400" />
@@ -559,7 +711,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">Availability Status</span>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       profile?.isAvailable 
@@ -569,6 +721,19 @@ export default function Dashboard() {
                       {profile?.isAvailable ? 'Available' : 'Unavailable'}
                     </span>
                   </div>
+                  <button
+                    onClick={handleToggleAvailability}
+                    className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      profile?.isAvailable
+                        ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                        : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                    }`}
+                  >
+                    {profile?.isAvailable ? 'Mark as Unavailable' : 'Mark as Available'}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Update your status if you&apos;re temporarily unavailable (e.g., left the city, health issues)
+                  </p>
                 </div>
               </div>
             </div>

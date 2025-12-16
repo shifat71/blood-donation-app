@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X } from 'lucide-react';
+import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X, Edit, CheckCircle } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Post = {
@@ -44,8 +44,26 @@ export default function DonorProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [caption, setCaption] = useState('');
   const [imageFile, setImageFile] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    userName: '',
+    bloodGroup: '',
+    phoneNumber: '',
+    address: '',
+    studentId: '',
+    lastDonationDate: '',
+    isAvailable: true,
+    currentDistrict: '',
+    department: '',
+    session: '',
+  });
+
+  const bloodGroups = Object.values(BloodGroup);
+  const isModeratorOrAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR';
 
   useEffect(() => {
     fetchDonor();
@@ -108,6 +126,53 @@ export default function DonorProfilePage() {
     }
   };
 
+  const openEditModal = () => {
+    if (donor) {
+      setEditForm({
+        userName: donor.user.name,
+        bloodGroup: donor.bloodGroup,
+        phoneNumber: donor.phoneNumber || '',
+        address: donor.address || '',
+        studentId: donor.studentId || '',
+        lastDonationDate: donor.lastDonationDate ? donor.lastDonationDate.split('T')[0] : '',
+        isAvailable: donor.isAvailable,
+        currentDistrict: donor.currentDistrict || '',
+        department: donor.department || '',
+        session: donor.session || '',
+      });
+      setShowEditModal(true);
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!donor) return;
+
+    setEditLoading(true);
+    try {
+      const response = await fetch(`/api/donors/${donor.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+
+      if (response.ok) {
+        await fetchDonor();
+        setShowEditModal(false);
+        setSuccessMessage('Profile updated successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        const data = await response.json();
+        alert('Error: ' + (data.error || 'Failed to update profile'));
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Error updating profile');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -147,6 +212,13 @@ export default function DonorProfilePage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Donors
           </button>
+
+          {successMessage && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <p className="text-green-800 font-medium">{successMessage}</p>
+            </div>
+          )}
 
           <div className="card mb-6">
             <div className="flex flex-col items-center text-center mb-6">
@@ -279,8 +351,9 @@ export default function DonorProfilePage() {
                     Add Photo
                   </button>
                 )}
-                {(session?.user.role === 'ADMIN' || session?.user.role === 'MODERATOR') && (
-                  <button onClick={() => router.push('/dashboard')} className="btn-secondary text-sm">
+                {isModeratorOrAdmin && (
+                  <button onClick={openEditModal} className="btn-secondary text-sm flex items-center gap-1">
+                    <Edit className="h-4 w-4" />
                     Edit Profile
                   </button>
                 )}
@@ -338,6 +411,137 @@ export default function DonorProfilePage() {
             <button onClick={handleUploadPost} disabled={!imageFile} className="btn-primary w-full">
               Upload
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal for Moderators/Admins */}
+      {showEditModal && isModeratorOrAdmin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 my-8">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Edit Donor Profile</h3>
+              <button onClick={() => setShowEditModal(false)}>
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editForm.userName}
+                    onChange={(e) => setEditForm({...editForm, userName: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
+                  <select
+                    className="input-field"
+                    value={editForm.bloodGroup}
+                    onChange={(e) => setEditForm({...editForm, bloodGroup: e.target.value})}
+                  >
+                    {bloodGroups.map((bg) => (
+                      <option key={bg} value={bg}>{bg.replace('_', ' ')}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    className="input-field"
+                    value={editForm.phoneNumber}
+                    onChange={(e) => setEditForm({...editForm, phoneNumber: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editForm.studentId}
+                    onChange={(e) => setEditForm({...editForm, studentId: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editForm.department}
+                    onChange={(e) => setEditForm({...editForm, department: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Session</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editForm.session}
+                    onChange={(e) => setEditForm({...editForm, session: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current District</label>
+                  <select
+                    className="input-field"
+                    value={editForm.currentDistrict}
+                    onChange={(e) => setEditForm({...editForm, currentDistrict: e.target.value})}
+                  >
+                    <option value="">Select District</option>
+                    <option value="Sylhet">Sylhet</option>
+                    <option value="Dhaka">Dhaka</option>
+                    <option value="Chittagong">Chittagong</option>
+                    <option value="Rajshahi">Rajshahi</option>
+                    <option value="Khulna">Khulna</option>
+                    <option value="Barisal">Barisal</option>
+                    <option value="Rangpur">Rangpur</option>
+                    <option value="Mymensingh">Mymensingh</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Donation Date</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={editForm.lastDonationDate}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setEditForm({...editForm, lastDonationDate: e.target.value})}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={editForm.address}
+                    onChange={(e) => setEditForm({...editForm, address: e.target.value})}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                      checked={editForm.isAvailable}
+                      onChange={(e) => setEditForm({...editForm, isAvailable: e.target.checked})}
+                    />
+                    <span className="text-sm font-medium text-gray-700">Available for Donation</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="submit" disabled={editLoading} className="btn-primary flex-1">
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button type="button" onClick={() => setShowEditModal(false)} className="btn-secondary flex-1">
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

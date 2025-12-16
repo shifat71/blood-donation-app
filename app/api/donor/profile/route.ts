@@ -125,7 +125,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { bloodGroup, phoneNumber, address, studentId, lastDonationDate, profilePicture, currentDistrict, department, session: academicSession } = body;
+    const { bloodGroup, phoneNumber, address, studentId, lastDonationDate, isAvailable, profilePicture, currentDistrict, department, session: academicSession } = body;
 
     // Find existing profile
     const existingProfile = await prisma.donorProfile.findUnique({
@@ -152,6 +152,16 @@ export async function PUT(request: NextRequest) {
     const autoAvailability = (currentDistrict || existingProfile.currentDistrict) === 'Sylhet' && 
       (!lastDonationDate || (Date.now() - new Date(lastDonationDate).getTime()) > 90 * 24 * 60 * 60 * 1000);
 
+    // Determine availability: use manual setting if provided, otherwise auto-calculate only when donation date changes
+    let finalAvailability = existingProfile.isAvailable;
+    if (isAvailable !== undefined) {
+      // Manual override
+      finalAvailability = isAvailable;
+    } else if (lastDonationDate !== undefined) {
+      // Auto-calculate when donation date is updated
+      finalAvailability = autoAvailability;
+    }
+
     // Update profile
     const updatedProfile = await prisma.donorProfile.update({
       where: { userId: session.user.id },
@@ -163,7 +173,7 @@ export async function PUT(request: NextRequest) {
         ...(lastDonationDate !== undefined && { 
           lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null 
         }),
-        isAvailable: autoAvailability,
+        isAvailable: finalAvailability,
         ...(uploadedImageUrl && { profilePicture: uploadedImageUrl }),
         ...(currentDistrict !== undefined && { currentDistrict }),
         ...(department !== undefined && { department }),
