@@ -33,6 +33,7 @@ export async function GET(_request: NextRequest) {
       );
     }
 
+    console.log('Fetched donor profile with profilePicture:', donorProfile.profilePicture);
     return NextResponse.json(donorProfile);
   } catch (error) {
     console.error('Error fetching donor profile:', error);
@@ -76,13 +77,22 @@ export async function POST(request: NextRequest) {
     }
 
     let uploadedImageUrl = null;
-    if (profilePicture) {
+    if (profilePicture && profilePicture.startsWith('data:')) {
+      // It's a base64 image, upload to Cloudinary
       try {
         const { uploadToCloudinary } = await import('@/lib/cloudinary');
         uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
+        console.log('Profile picture uploaded to Cloudinary:', uploadedImageUrl);
       } catch (error) {
         console.error('Cloudinary upload failed:', error);
+        return NextResponse.json(
+          { error: 'Failed to upload profile picture' },
+          { status: 500 }
+        );
       }
+    } else if (profilePicture && profilePicture.startsWith('http')) {
+      // It's already a URL, use it directly
+      uploadedImageUrl = profilePicture;
     }
 
     const autoAvailability = currentDistrict === 'Sylhet' && 
@@ -105,6 +115,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('Donor profile created with profilePicture:', donorProfile.profilePicture);
     return NextResponse.json(donorProfile, { status: 201 });
   } catch (error) {
     console.error('Error creating donor profile:', error);
@@ -140,13 +151,22 @@ export async function PUT(request: NextRequest) {
     }
 
     let uploadedImageUrl = existingProfile.profilePicture;
-    if (profilePicture && profilePicture !== existingProfile.profilePicture) {
+    if (profilePicture && profilePicture.startsWith('data:')) {
+      // It's a new base64 image, upload to Cloudinary
       try {
         const { uploadToCloudinary } = await import('@/lib/cloudinary');
         uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
+        console.log('Profile picture uploaded to Cloudinary:', uploadedImageUrl);
       } catch (error) {
         console.error('Cloudinary upload failed:', error);
+        return NextResponse.json(
+          { error: 'Failed to upload profile picture' },
+          { status: 500 }
+        );
       }
+    } else if (profilePicture && profilePicture.startsWith('http')) {
+      // It's already a URL (existing image), keep it
+      uploadedImageUrl = profilePicture;
     }
 
     const autoAvailability = (currentDistrict || existingProfile.currentDistrict) === 'Sylhet' && 
@@ -174,13 +194,23 @@ export async function PUT(request: NextRequest) {
           lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null 
         }),
         isAvailable: finalAvailability,
-        ...(uploadedImageUrl && { profilePicture: uploadedImageUrl }),
+        ...(uploadedImageUrl !== existingProfile.profilePicture && { profilePicture: uploadedImageUrl }),
         ...(currentDistrict !== undefined && { currentDistrict }),
         ...(department !== undefined && { department }),
         ...(academicSession !== undefined && { session: academicSession }),
       },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            isVerified: true,
+          },
+        },
+      },
     });
 
+    console.log('Profile updated with profilePicture:', updatedProfile.profilePicture);
     return NextResponse.json(updatedProfile);
   } catch (error) {
     console.error('Error updating donor profile:', error);

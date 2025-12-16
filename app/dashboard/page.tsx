@@ -207,6 +207,12 @@ export default function Dashboard() {
       return;
     }
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
     setUploadingPhoto(true);
     
     try {
@@ -215,6 +221,7 @@ export default function Dashboard() {
       reader.onload = async () => {
         const base64 = reader.result as string;
         
+        console.log('Uploading profile picture...');
         const response = await fetch('/api/donor/profile', {
           method: 'PUT',
           headers: {
@@ -223,24 +230,33 @@ export default function Dashboard() {
           body: JSON.stringify({ profilePicture: base64 }),
         });
 
+        const data = await response.json();
+        
         if (response.ok) {
+          console.log('Profile picture updated:', data.profilePicture);
+          // Force refresh the profile to get the new image URL
           await fetchProfile();
           setSuccessMessage('Profile picture updated successfully!');
           setTimeout(() => setSuccessMessage(''), 3000);
         } else {
-          const data = await response.json();
+          console.error('Upload failed:', data);
           alert('Error: ' + (data.error || 'Failed to upload profile picture'));
         }
         setUploadingPhoto(false);
+        
+        // Reset the file input
+        e.target.value = '';
       };
       reader.onerror = () => {
         alert('Error reading file');
         setUploadingPhoto(false);
+        e.target.value = '';
       };
     } catch (error) {
       console.error('Error uploading profile picture:', error);
       alert('Error uploading profile picture');
       setUploadingPhoto(false);
+      e.target.value = '';
     }
   };
 
@@ -588,6 +604,7 @@ export default function Dashboard() {
                   <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-red-100 to-red-200 border-4 border-white shadow-xl flex items-center justify-center">
                     {profile?.profilePicture ? (
                       <Image
+                        key={profile.profilePicture}
                         src={profile.profilePicture}
                         alt={profile.user.name || 'Profile'}
                         width={128}
