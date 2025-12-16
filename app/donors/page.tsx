@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Search, Filter, Droplet, Phone, MapPin, Calendar, Mail } from 'lucide-react';
@@ -20,6 +21,7 @@ type Donor = {
 };
 
 export default function Donors() {
+  const router = useRouter();
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -168,9 +170,26 @@ export default function Donors() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {donors.map((donor) => (
-                <div key={donor.id} className="card hover:shadow-lg transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
+                <div 
+                  key={donor.id} 
+                  onClick={() => router.push(`/donors/${donor.id}`)}
+                  className="card hover:shadow-lg transition-shadow cursor-pointer"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    {donor.profilePicture ? (
+                      <img 
+                        src={donor.profilePicture} 
+                        alt={donor.user.name}
+                        className="h-16 w-16 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-red-600 font-bold text-xl">
+                          {donor.user.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-grow">
                       <h3 className="text-lg font-semibold text-gray-900">{donor.user.name}</h3>
                       <div className="flex items-center mt-1">
                         <Droplet className="h-4 w-4 text-red-600 mr-1" />

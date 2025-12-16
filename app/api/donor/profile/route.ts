@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { bloodGroup, phoneNumber, address, studentId, lastDonationDate } = body;
+    const { bloodGroup, phoneNumber, address, studentId, lastDonationDate, profilePicture, currentDistrict, department, session: academicSession } = body;
 
     // Validate blood group
     if (!bloodGroup || !Object.values(BloodGroup).includes(bloodGroup)) {
@@ -75,6 +75,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let uploadedImageUrl = null;
+    if (profilePicture) {
+      try {
+        const { uploadToCloudinary } = await import('@/lib/cloudinary');
+        uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
+      } catch (error) {
+        console.error('Cloudinary upload failed:', error);
+      }
+    }
+
+    const autoAvailability = currentDistrict === 'Sylhet' && 
+      (!lastDonationDate || (Date.now() - new Date(lastDonationDate).getTime()) > 90 * 24 * 60 * 60 * 1000);
+
     // Create donor profile
     const donorProfile = await prisma.donorProfile.create({
       data: {
@@ -84,7 +97,11 @@ export async function POST(request: NextRequest) {
         address,
         studentId,
         lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null,
-        isAvailable: true,
+        isAvailable: autoAvailability,
+        profilePicture: uploadedImageUrl,
+        currentDistrict: currentDistrict || 'Sylhet',
+        department,
+        session: academicSession,
       },
     });
 
@@ -108,7 +125,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { bloodGroup, phoneNumber, address, studentId, lastDonationDate, isAvailable } = body;
+    const { bloodGroup, phoneNumber, address, studentId, lastDonationDate, isAvailable, profilePicture, currentDistrict, department, session: academicSession } = body;
 
     // Find existing profile
     const existingProfile = await prisma.donorProfile.findUnique({
@@ -122,6 +139,19 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    let uploadedImageUrl = existingProfile.profilePicture;
+    if (profilePicture && profilePicture !== existingProfile.profilePicture) {
+      try {
+        const { uploadToCloudinary } = await import('@/lib/cloudinary');
+        uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
+      } catch (error) {
+        console.error('Cloudinary upload failed:', error);
+      }
+    }
+
+    const autoAvailability = (currentDistrict || existingProfile.currentDistrict) === 'Sylhet' && 
+      (!lastDonationDate || (Date.now() - new Date(lastDonationDate).getTime()) > 90 * 24 * 60 * 60 * 1000);
+
     // Update profile
     const updatedProfile = await prisma.donorProfile.update({
       where: { userId: session.user.id },
@@ -133,7 +163,11 @@ export async function PUT(request: NextRequest) {
         ...(lastDonationDate !== undefined && { 
           lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null 
         }),
-        ...(isAvailable !== undefined && { isAvailable }),
+        isAvailable: autoAvailability,
+        ...(uploadedImageUrl && { profilePicture: uploadedImageUrl }),
+        ...(currentDistrict !== undefined && { currentDistrict }),
+        ...(department !== undefined && { department }),
+        ...(academicSession !== undefined && { session: academicSession }),
       },
     });
 

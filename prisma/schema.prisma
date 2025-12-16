@@ -54,6 +54,7 @@ model User {
   donorProfile      DonorProfile?
   verificationRequests VerificationRequest[]
   moderatorActions  VerificationRequest[] @relation("ModeratorActions")
+  posts             Post[]
   
   @@index([email])
   @@index([role])
@@ -70,6 +71,10 @@ model DonorProfile {
   phoneNumber       String?
   address           String?
   studentId         String?
+  profilePicture    String?
+  currentDistrict   String?     @default("Sylhet")
+  department        String?
+  session           String?
   
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -98,4 +103,16 @@ model VerificationRequest {
   @@index([userId])
   @@index([status])
   @@index([moderatorId])
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl    String
+  caption     String?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
 }
