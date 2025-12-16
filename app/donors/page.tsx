@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Search, Droplet, Phone, MapPin, Calendar, Mail } from 'lucide-react';
@@ -14,6 +15,7 @@ type Donor = {
   isAvailable: boolean;
   phoneNumber: string | null;
   address: string | null;
+  profilePicture: string | null;
   user: {
     name: string;
     email: string;
@@ -178,10 +180,13 @@ export default function Donors() {
                 >
                   <div className="flex items-start gap-4 mb-4">
                     {donor.profilePicture ? (
-                      <img 
+                      <Image 
                         src={donor.profilePicture} 
                         alt={donor.user.name}
+                        width={64}
+                        height={64}
                         className="h-16 w-16 rounded-full object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">

@@ -3,10 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
+
+type Post = {
+  id: string;
+  imageUrl: string;
+  caption: string | null;
+  createdAt: string;
+};
 
 type DonorProfile = {
   id: string;
@@ -33,7 +41,7 @@ export default function DonorProfilePage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [donor, setDonor] = useState<DonorProfile | null>(null);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [caption, setCaption] = useState('');
@@ -41,10 +49,12 @@ export default function DonorProfilePage() {
 
   useEffect(() => {
     fetchDonor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   useEffect(() => {
     if (donor) fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [donor]);
 
   const fetchDonor = async () => {
@@ -141,10 +151,13 @@ export default function DonorProfilePage() {
           <div className="card mb-6">
             <div className="flex flex-col items-center text-center mb-6">
               {donor.profilePicture ? (
-                <img 
+                <Image 
                   src={donor.profilePicture} 
                   alt={donor.user.name}
+                  width={128}
+                  height={128}
                   className="h-32 w-32 rounded-full object-cover border-4 border-gray-200 mb-4"
+                  unoptimized
                 />
               ) : (
                 <div className="h-32 w-32 rounded-full bg-red-100 flex items-center justify-center border-4 border-gray-200 mb-4">
@@ -277,8 +290,8 @@ export default function DonorProfilePage() {
             {posts.length > 0 ? (
               <div className="grid grid-cols-3 gap-1">
                 {posts.map((post) => (
-                  <div key={post.id} className="aspect-square">
-                    <img src={post.imageUrl} alt={post.caption || 'Post'} className="w-full h-full object-cover" />
+                  <div key={post.id} className="aspect-square relative">
+                    <Image src={post.imageUrl} alt={post.caption || 'Post'} fill className="object-cover" unoptimized />
                   </div>
                 ))}
               </div>
@@ -314,7 +327,7 @@ export default function DonorProfilePage() {
                 }
               }}
             />
-            {imageFile && <img src={imageFile} alt="Preview" className="w-full h-48 object-cover rounded mb-4" />}
+            {imageFile && <div className="relative w-full h-48 mb-4"><Image src={imageFile} alt="Preview" fill className="object-cover rounded" unoptimized /></div>}
             <textarea
               className="input-field mb-4"
               placeholder="Caption (optional)"
