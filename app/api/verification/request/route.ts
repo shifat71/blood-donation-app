@@ -136,14 +136,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-  } catch (error) {
-    console.error('Error creating verification request:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
 
 // GET verification status
 export async function GET(request: NextRequest) {

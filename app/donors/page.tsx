@@ -22,38 +22,59 @@ type Donor = {
 export default function Donors() {
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBloodGroup, setSelectedBloodGroup] = useState('');
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState(0);
 
   const bloodGroups = Object.values(BloodGroup);
 
   useEffect(() => {
-    fetchDonors();
+    setPage(1);
+    fetchDonors(1, true);
   }, [selectedBloodGroup, availableOnly]);
 
-  const fetchDonors = async () => {
-    setLoading(true);
+  const fetchDonors = async (pageNum: number = page, reset: boolean = false) => {
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+    
     try {
       const params = new URLSearchParams();
       if (selectedBloodGroup) params.append('bloodGroup', selectedBloodGroup);
       if (availableOnly) params.append('availableOnly', 'true');
       if (searchTerm) params.append('search', searchTerm);
+      params.append('page', pageNum.toString());
+      params.append('limit', '20');
 
       const response = await fetch(`/api/donors?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setDonors(data);
+        setDonors(reset ? data.donors : [...donors, ...data.donors]);
+        setHasMore(data.hasMore);
+        setTotal(data.total);
+        setPage(pageNum);
       }
     } catch (error) {
       console.error('Error fetching donors:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   const handleSearch = () => {
-    fetchDonors();
+    setPage(1);
+    fetchDonors(1, true);
+  };
+
+  const handleLoadMore = () => {
+    fetchDonors(page + 1, false);
   };
 
   return (
@@ -201,10 +222,21 @@ export default function Donors() {
             </div>
           )}
 
-          {/* Summary */}
+          {/* Load More & Summary */}
           {!loading && donors.length > 0 && (
-            <div className="mt-6 text-center text-sm text-gray-600">
-              Showing {donors.length} donor{donors.length !== 1 ? 's' : ''}
+            <div className="mt-6 text-center">
+              {hasMore && (
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="btn-primary mb-4"
+                >
+                  {loadingMore ? 'Loading...' : 'Load More'}
+                </button>
+              )}
+              <p className="text-sm text-gray-600">
+                Showing {donors.length} of {total} donor{total !== 1 ? 's' : ''}
+              </p>
             </div>
           )}
         </div>
