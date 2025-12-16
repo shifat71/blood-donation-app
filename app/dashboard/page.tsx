@@ -52,6 +52,7 @@ export default function Dashboard() {
       fetchProfile();
       checkVerificationRequest();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   const fetchProfile = async () => {

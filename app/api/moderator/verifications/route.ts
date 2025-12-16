@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Role, VerificationStatus } from '@prisma/client';
 
 // GET all pending verification requests (moderator/admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 

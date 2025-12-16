@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
@@ -210,14 +211,13 @@ export default function ModeratorDashboard() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">ID Card Image</label>
-                  <div className="mt-2">
-                    <img
+                  <div className="mt-2 relative w-full" style={{ minHeight: '300px' }}>
+                    <Image
                       src={selectedRequest.idCardImageUrl}
                       alt="Student ID Card"
-                      className="max-w-full h-auto rounded-lg border border-gray-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Available';
-                      }}
+                      fill
+                      className="object-contain rounded-lg border border-gray-300"
+                      unoptimized
                     />
                   </div>
                 </div>

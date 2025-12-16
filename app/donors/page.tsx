@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Search, Filter, Droplet, Phone, MapPin, Calendar, Mail } from 'lucide-react';
+import { Search, Droplet, Phone, MapPin, Calendar, Mail } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Donor = {
@@ -35,6 +35,7 @@ export default function Donors() {
   useEffect(() => {
     setPage(1);
     fetchDonors(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBloodGroup, availableOnly]);
 
   const fetchDonors = async (pageNum: number = page, reset: boolean = false) => {

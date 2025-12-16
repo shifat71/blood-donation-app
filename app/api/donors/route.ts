@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { BloodGroup } from '@prisma/client';
+import { BloodGroup, Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,14 +12,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.DonorProfileWhereInput = {
       user: {
         isVerified: true,
       },
     };
 
     if (bloodGroup && Object.values(BloodGroup).includes(bloodGroup as BloodGroup)) {
-      where.bloodGroup = bloodGroup;
+      where.bloodGroup = bloodGroup as BloodGroup;
     }
 
     if (availableOnly) {
@@ -30,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.user = {
-        ...where.user,
+        isVerified: true,
         name: {
           contains: search,
           mode: 'insensitive',
