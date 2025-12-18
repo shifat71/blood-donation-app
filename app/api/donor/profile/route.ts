@@ -95,8 +95,7 @@ export async function POST(request: NextRequest) {
       uploadedImageUrl = profilePicture;
     }
 
-    const autoAvailability = currentDistrict === 'Sylhet' && 
-      (!lastDonationDate || (Date.now() - new Date(lastDonationDate).getTime()) > 90 * 24 * 60 * 60 * 1000);
+    const autoAvailability = !lastDonationDate || (Date.now() - new Date(lastDonationDate).getTime()) >= 90 * 24 * 60 * 60 * 1000;
 
     // Create donor profile
     const donorProfile = await prisma.donorProfile.create({
@@ -169,8 +168,8 @@ export async function PUT(request: NextRequest) {
       uploadedImageUrl = profilePicture;
     }
 
-    const autoAvailability = (currentDistrict || existingProfile.currentDistrict) === 'Sylhet' && 
-      (!lastDonationDate || (Date.now() - new Date(lastDonationDate).getTime()) > 90 * 24 * 60 * 60 * 1000);
+    const donationDateToCheck = lastDonationDate !== undefined ? lastDonationDate : existingProfile.lastDonationDate;
+    const autoAvailability = !donationDateToCheck || (Date.now() - new Date(donationDateToCheck).getTime()) >= 90 * 24 * 60 * 60 * 1000;
 
     // Determine availability: use manual setting if provided, otherwise auto-calculate only when donation date changes
     let finalAvailability = existingProfile.isAvailable;
@@ -178,7 +177,7 @@ export async function PUT(request: NextRequest) {
       // Manual override - but can't set to available if within 90 days of last donation
       if (isAvailable === true && !autoAvailability) {
         return NextResponse.json(
-          { error: 'Cannot mark as available. Must wait 90 days after last donation or be in Sylhet.' },
+          { error: 'Cannot mark as available. Must wait 90 days after last donation.' },
           { status: 400 }
         );
       }
