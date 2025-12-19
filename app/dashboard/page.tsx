@@ -1,3 +1,4 @@
+/* cSpell:words Sylhet Barisal Rangpur Mymensingh */
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -853,7 +854,7 @@ export default function Dashboard() {
                   </label>
                   <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
                     <div className="relative group">
-                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden bg-gradient-to-br from-red-100 to-red-200 border-4 border-white flex items-center justify-center shadow-xl ring-4 ring-red-100">
+                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden bg-gradient-to-br from-red-100 to-red-200 border-4 border-white shadow-xl ring-4 ring-red-100">
                         {uploadingPhoto ? (
                           <div className="text-center">
                             <div className="animate-spin rounded-full h-10 w-10 border-4 border-red-600 border-t-transparent mx-auto"></div>
