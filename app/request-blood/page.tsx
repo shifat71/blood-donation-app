@@ -55,7 +55,7 @@ export default function RequestBloodPage() {
           <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
           <p className="mb-6 text-gray-600">Please sign in with Google to submit a blood donation request</p>
           <button
-            onClick={() => signIn('google')}
+            onClick={() => signIn('google', { callbackUrl: '/requester' })}
             className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition"
           >
             Sign in with Google
