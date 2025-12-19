@@ -13,6 +13,7 @@ datasource db {
 
 enum Role {
   DONOR
+  REQUESTER
   MODERATOR
   ADMIN
 }
@@ -58,6 +59,7 @@ model User {
   verificationRequests VerificationRequest[]
   moderatorActions  VerificationRequest[] @relation("ModeratorActions")
   posts             Post[]
+  bloodRequests     BloodRequest[]
   
   @@index([email])
   @@index([role])
@@ -117,5 +119,38 @@ model Post {
   createdAt   DateTime @default(now())
   
   @@index([userId])
+  @@index([createdAt])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FULFILLED
+}
+
+model BloodRequest {
+  id                String        @id @default(cuid())
+  requesterName     String
+  requesterEmail    String
+  requesterPhone    String
+  bloodGroup        BloodGroup
+  urgency           String        // URGENT, MODERATE, NORMAL
+  location          String
+  hospitalName      String?
+  patientName       String?
+  unitsNeeded       Int           @default(1)
+  additionalInfo    String?
+  status            RequestStatus @default(PENDING)
+  
+  moderatorId       String?
+  moderator         User?         @relation(fields: [moderatorId], references: [id])
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  approvedAt        DateTime?
+  
+  @@index([status])
+  @@index([bloodGroup])
   @@index([createdAt])
 }

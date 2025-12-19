@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<Role>(Role.DONOR);
+  const [activeTab, setActiveTab] = useState<'all' | 'donors' | 'requesters'>('all');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -106,10 +107,17 @@ export default function AdminDashboard() {
   const stats = {
     totalUsers: users.length,
     donors: users.filter(u => u.role === Role.DONOR).length,
+    requesters: users.filter(u => u.role === Role.REQUESTER).length,
     moderators: users.filter(u => u.role === Role.MODERATOR).length,
     admins: users.filter(u => u.role === Role.ADMIN).length,
     verified: users.filter(u => u.isVerified).length,
   };
+
+  const filteredUsers = activeTab === 'donors' 
+    ? users.filter(u => u.role === Role.DONOR)
+    : activeTab === 'requesters'
+    ? users.filter(u => u.role === Role.REQUESTER)
+    : users;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -253,7 +261,29 @@ export default function AdminDashboard() {
 
           {/* Users Table */}
           <div className="card p-3 sm:p-4 lg:p-6">
-            <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">All Users</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">Users</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'all' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                >
+                  All ({stats.totalUsers})
+                </button>
+                <button
+                  onClick={() => setActiveTab('donors')}
+                  className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'donors' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                >
+                  Donors ({stats.donors})
+                </button>
+                <button
+                  onClick={() => setActiveTab('requesters')}
+                  className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'requesters' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                >
+                  Requesters ({stats.requesters})
+                </button>
+              </div>
+            </div>
             <div className="overflow-x-auto -mx-3 sm:-mx-4 lg:-mx-6">
               <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
                 <thead className="bg-gray-50">
@@ -279,7 +309,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
                         <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{user.name}</div>
@@ -293,11 +323,16 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap hidden md:table-cell">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-4 sm:leading-5 font-semibold rounded-full ${
-                          user.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {user.isVerified ? 'Verified' : 'Unverified'}
-                        </span>
+                        {user.role !== Role.REQUESTER && (
+                          <span className={`px-2 py-1 inline-flex text-xs leading-4 sm:leading-5 font-semibold rounded-full ${
+                            user.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {user.isVerified ? 'Verified' : 'Unverified'}
+                          </span>
+                        )}
+                        {user.role === Role.REQUESTER && (
+                          <span className="text-xs text-gray-400">N/A</span>
+                        )}
                       </td>
                       <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap hidden lg:table-cell text-xs text-gray-500">
                         {new Date(user.createdAt).toLocaleDateString()}
@@ -354,6 +389,7 @@ export default function AdminDashboard() {
                   onChange={(e) => setNewRole(e.target.value as Role)}
                 >
                   <option value={Role.DONOR}>DONOR</option>
+                  <option value={Role.REQUESTER}>REQUESTER</option>
                   <option value={Role.MODERATOR}>MODERATOR</option>
                   <option value={Role.ADMIN}>ADMIN</option>
                 </select>
