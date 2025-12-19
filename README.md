@@ -52,18 +52,30 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - View personal donation history and statistics
 - Maintain accurate and up-to-date blood donation information
 
+#### 🩸 **Requester**
+
+- Sign in with Google to submit blood donation requests
+- Create urgent blood requests with detailed information
+- Track request status (Pending/Approved/Rejected)
+- View request history in personal dashboard
+- Receive notifications when requests are approved
+- No verification required - instant access
+
 #### 🧑⚖️ **Moderator**
 
 - Access a dedicated moderator dashboard
 - Verify donor profiles submitted for manual verification
-- Update or correct donor information
 - Approve or reject donor registrations
+- Review and approve/reject blood donation requests
+- Trigger email notifications to available donors
+- Update or correct donor information
 - Monitor platform activity
 
 #### 👑 **System Admin**
 
 - Full access to the moderator dashboard
 - Add and manage moderators
+- Manage all user roles (Donor, Requester, Moderator)
 - Oversee the entire verification workflow
 - System-wide configuration and management
  
@@ -88,9 +100,27 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 - Includes all moderator capabilities
 - Manage moderator accounts and permissions
+- View and manage all users (Donors, Requesters, Moderators)
+- Separate tabs for different user roles
 - Platform oversight and analytics
 
+#### **Requester Dashboard**
+
+- View all submitted blood requests
+- Track request status in real-time
+- Submit new blood requests
+- Responsive design for all devices
+
 ---
+
+### 🩸 Blood Request System
+
+- **Public Access**: Anyone can submit blood requests via Google Sign-In
+- **Request Form**: Comprehensive form with blood group, urgency, location, hospital, patient details
+- **Moderator Approval**: All requests reviewed by moderators before notification
+- **Email Notifications**: Automatic emails sent to all available donors with matching blood group
+- **Request Tracking**: Requesters can view status and history in personal dashboard
+- **Status Management**: Track requests through Pending → Approved/Rejected states
 
 ### 📱 Social Features
 
@@ -114,14 +144,16 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 ## 🧩 Future Improvements (Planned)
 
-- [ ] Public donor search and filter by blood group and availability
+- [x] Public blood request system with Google OAuth
+- [x] Email notifications to available donors
+- [x] Moderator approval workflow for requests
+- [x] Requester dashboard for tracking requests
+- [ ] SMS notifications to donors (currently email only)
 - [ ] Location-based donor discovery with map integration
-- [ ] Notification system for urgent blood requests
 - [ ] Donation history analytics and insights
 - [ ] Privacy controls for donor information
 - [ ] Public feed for all donor posts
 - [ ] Commenting and interaction features
-- [ ] Emergency blood request system
 - [ ] Mobile app version
 
 ---
@@ -150,8 +182,13 @@ cp .env.example .env
 # Configure your database connection in .env
 # DATABASE_URL="postgresql://..."
 
+# Add Google OAuth credentials
+# GOOGLE_CLIENT_ID="your_google_client_id"
+# GOOGLE_CLIENT_SECRET="your_google_client_secret"
+
 # Run Prisma migrations
-npx prisma migrate dev
+npx prisma db push
+npx prisma generate
 
 # Start the development server
 npm run dev
