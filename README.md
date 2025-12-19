@@ -65,6 +65,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 - Access a dedicated moderator dashboard
 - Verify donor profiles submitted for manual verification
+- Approve or reject donor registrations
 - Review and approve/reject blood donation requests
 - Trigger email notifications to available donors
 - Update or correct donor information
