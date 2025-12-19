@@ -37,7 +37,7 @@ export default function RequestBloodPage() {
 
       if (res.ok) {
         alert('Request submitted successfully! Waiting for moderator approval.');
-        router.push('/');
+        router.push('/requester');
       } else {
         alert('Failed to submit request');
       }
