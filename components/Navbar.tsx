@@ -28,6 +28,14 @@ export function Navbar() {
             >
               Find Donors
             </Link>
+            {(!session || session.user.role === 'REQUESTER') && (
+              <Link
+                href="/request-blood"
+                className="bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-700"
+              >
+                Request Blood
+              </Link>
+            )}
 
             {session ? (
               <>
@@ -37,6 +45,15 @@ export function Navbar() {
                     className="text-gray-700 hover:text-red-600 px-2 lg:px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Dashboard
+                  </Link>
+                )}
+
+                {session.user.role === 'REQUESTER' && (
+                  <Link
+                    href="/requester"
+                    className="text-gray-700 hover:text-red-600 px-2 lg:px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    My Requests
                   </Link>
                 )}
 
@@ -103,6 +120,15 @@ export function Navbar() {
             >
               Find Donors
             </Link>
+            {(!session || session.user.role === 'REQUESTER') && (
+              <Link
+                href="/request-blood"
+                className="block px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Request Blood
+              </Link>
+            )}
 
             {session ? (
               <>
@@ -113,6 +139,16 @@ export function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Dashboard
+                  </Link>
+                )}
+
+                {session.user.role === 'REQUESTER' && (
+                  <Link
+                    href="/requester"
+                    className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Requests
                   </Link>
                 )}
 
