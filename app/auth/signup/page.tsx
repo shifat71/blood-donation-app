@@ -163,16 +163,16 @@ export default function SignUp() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <main className="flex-grow flex items-center justify-center bg-gray-50 py-8 sm:py-12 px-3 sm:px-4 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <div>
             <div className="flex justify-center">
-              <Droplet className="h-12 w-12 text-red-600" />
+              <Droplet className="h-10 sm:h-12 w-10 sm:w-12 text-red-600" />
             </div>
-            <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+            <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-bold text-gray-900">
               Create your account
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            <p className="mt-2 text-center text-xs sm:text-sm text-gray-600">
               Already have an account?{' '}
               <Link href="/auth/signin" className="font-medium text-red-600 hover:text-red-500">
                 Sign in
@@ -181,18 +181,18 @@ export default function SignUp() {
           </div>
 
           {success ? (
-            <div className="rounded-md bg-green-50 p-6 text-center">
-              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <p className="text-lg font-medium text-green-800 mb-2">Account created successfully!</p>
+            <div className="rounded-md bg-green-50 p-4 sm:p-6 text-center">
+              <CheckCircle className="h-10 sm:h-12 w-10 sm:w-12 text-green-600 mx-auto mb-4" />
+              <p className="text-base sm:text-lg font-medium text-green-800 mb-2">Account created successfully!</p>
               {needsManualVerification ? (
-                <p className="text-sm text-green-700">Your verification request has been submitted. A moderator will review it shortly.</p>
+                <p className="text-xs sm:text-sm text-green-700">Your verification request has been submitted. A moderator will review it shortly.</p>
               ) : (
-                <p className="text-sm text-green-700">Redirecting to sign in...</p>
+                <p className="text-xs sm:text-sm text-green-700">Redirecting to sign in...</p>
               )}
             </div>
           ) : (
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-4">
+            <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-4 sm:space-y-5">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name

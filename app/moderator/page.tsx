@@ -113,19 +113,19 @@ export default function ModeratorDashboard() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 flex items-center justify-between">
+      <main className="flex-grow bg-gray-50 py-6 sm:py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Moderator Dashboard</h1>
-              <p className="text-gray-600 mt-2">Review and approve verification requests</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Moderator Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">Review and approve verification requests</p>
             </div>
             <button
               onClick={() => {
                 setLoading(true);
                 fetchRequests();
               }}
-              className="btn-secondary flex items-center gap-2"
+              className="btn-secondary flex items-center justify-center gap-2 text-sm"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -135,14 +135,14 @@ export default function ModeratorDashboard() {
           </div>
 
           {/* Stats */}
-          <div className="grid md:grid-cols-3 gap-6 mb-6">
-            <div className="card">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="card p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Pending Requests</p>
-                  <p className="text-3xl font-bold text-gray-900">{requests.length}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Pending Requests</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">{requests.length}</p>
                 </div>
-                <Clock className="h-12 w-12 text-yellow-500" />
+                <Clock className="h-10 sm:h-12 w-10 sm:w-12 text-yellow-500" />
               </div>
             </div>
           </div>
@@ -154,19 +154,19 @@ export default function ModeratorDashboard() {
             </div>
           ) : requests.length === 0 ? (
             <div className="card text-center py-12">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">All caught up!</h3>
-              <p className="text-gray-600">No pending verification requests</p>
+              <CheckCircle className="h-12 sm:h-16 w-12 sm:w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">All caught up!</h3>
+              <p className="text-xs sm:text-sm text-gray-600">No pending verification requests</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {requests.map((request) => (
-                <div key={request.id} className="card">
+                <div key={request.id} className="card p-4 sm:p-6">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-grow">
-                      <h3 className="text-lg font-semibold text-gray-900">{request.user.name}</h3>
-                      <div className="mt-2 space-y-1 text-sm text-gray-600">
-                        <p>Email: {request.user.email}</p>
+                    <div className="flex-grow min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{request.user.name}</h3>
+                      <div className="mt-2 space-y-1 text-xs sm:text-sm text-gray-600">
+                        <p className="truncate">Email: {request.user.email}</p>
                         <p>Student ID: {request.studentId}</p>
                         <p>Submitted: {new Date(request.createdAt).toLocaleDateString()}</p>
                       </div>
@@ -175,9 +175,9 @@ export default function ModeratorDashboard() {
                     <div className="flex flex-col gap-2">
                       <button
                         onClick={() => setSelectedRequest(request)}
-                        className="btn-secondary text-sm"
+                        className="btn-secondary text-xs sm:text-sm whitespace-nowrap"
                       >
-                        <Eye className="h-4 w-4 inline mr-1" />
+                        <Eye className="h-3 sm:h-4 w-3 sm:w-4 inline mr-1" />
                         View Details
                       </button>
                     </div>
@@ -193,25 +193,25 @@ export default function ModeratorDashboard() {
       {selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Verification Request</h2>
+            <div className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Verification Request</h2>
               
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Name</label>
-                  <p className="text-gray-900">{selectedRequest.user.name}</p>
+                  <label className="text-xs sm:text-sm font-medium text-gray-700">Name</label>
+                  <p className="text-sm sm:text-base text-gray-900 truncate">{selectedRequest.user.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Email</label>
-                  <p className="text-gray-900">{selectedRequest.user.email}</p>
+                  <label className="text-xs sm:text-sm font-medium text-gray-700">Email</label>
+                  <p className="text-sm sm:text-base text-gray-900 truncate">{selectedRequest.user.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Student ID</label>
-                  <p className="text-gray-900">{selectedRequest.studentId}</p>
+                  <label className="text-xs sm:text-sm font-medium text-gray-700">Student ID</label>
+                  <p className="text-sm sm:text-base text-gray-900">{selectedRequest.studentId}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">ID Card Image</label>
-                  <div className="mt-2 relative w-full" style={{ minHeight: '300px' }}>
+                  <label className="text-xs sm:text-sm font-medium text-gray-700">ID Card Image</label>
+                  <div className="mt-2 relative w-full" style={{ minHeight: '200px', maxHeight: '400px' }}>
                     <Image
                       src={selectedRequest.idCardImageUrl}
                       alt="Student ID Card"
@@ -224,11 +224,11 @@ export default function ModeratorDashboard() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Reason (for rejection)
                 </label>
                 <textarea
-                  className="input-field"
+                  className="input-field text-sm"
                   rows={3}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -236,17 +236,17 @@ export default function ModeratorDashboard() {
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3 flex-col sm:flex-row">
                 <button
                   onClick={() => handleVerification(selectedRequest.id, VerificationStatus.APPROVED)}
-                  className="btn-primary flex-1"
+                  className="btn-primary flex-1 text-sm flex items-center justify-center"
                 >
                   <CheckCircle className="h-4 w-4 inline mr-1" />
                   Approve
                 </button>
                 <button
                   onClick={() => handleVerification(selectedRequest.id, VerificationStatus.REJECTED)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex-1"
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex-1 text-sm flex items-center justify-center"
                 >
                   <XCircle className="h-4 w-4 inline mr-1" />
                   Reject
@@ -256,7 +256,7 @@ export default function ModeratorDashboard() {
                     setSelectedRequest(null);
                     setReason('');
                   }}
-                  className="btn-secondary"
+                  className="btn-secondary text-sm"
                 >
                   Cancel
                 </button>

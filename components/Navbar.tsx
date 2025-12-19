@@ -11,20 +11,20 @@ export function Navbar() {
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between h-14 sm:h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Droplet className="h-8 w-8 text-red-600" />
-              <span className="text-xl font-bold text-gray-900">BloodConnect</span>
+            <Link href="/" className="flex items-center space-x-1 sm:space-x-2">
+              <Droplet className="h-6 sm:h-8 w-6 sm:w-8 text-red-600" />
+              <span className="text-base sm:text-xl font-bold text-gray-900">BloodConnect</span>
             </Link>
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
             <Link
               href="/donors"
-              className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-700 hover:text-red-600 px-2 lg:px-3 py-2 rounded-md text-sm font-medium"
             >
               Find Donors
             </Link>
@@ -34,7 +34,7 @@ export function Navbar() {
                 {session.user.role === 'DONOR' && (
                   <Link
                     href="/dashboard"
-                    className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-gray-700 hover:text-red-600 px-2 lg:px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Dashboard
                   </Link>
@@ -43,7 +43,7 @@ export function Navbar() {
                 {(session.user.role === 'MODERATOR' || session.user.role === 'ADMIN') && (
                   <Link
                     href="/moderator"
-                    className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-gray-700 hover:text-red-600 px-2 lg:px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Moderator
                   </Link>
@@ -52,28 +52,28 @@ export function Navbar() {
                 {session.user.role === 'ADMIN' && (
                   <Link
                     href="/admin"
-                    className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-gray-700 hover:text-red-600 px-2 lg:px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Admin
                   </Link>
                 )}
 
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-700 font-medium">{session.user.name}</span>
+                <div className="flex items-center space-x-2 lg:space-x-3 border-l border-gray-200 pl-3 lg:pl-4">
+                  <span className="text-xs sm:text-sm text-gray-700 font-medium truncate">{session.user.name}</span>
                   <button
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="btn-secondary text-sm"
+                    className="btn-secondary text-xs sm:text-sm px-2 py-1.5"
                   >
                     Sign Out
                   </button>
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-3">
-                <Link href="/auth/signin" className="btn-secondary text-sm">
+              <div className="flex items-center space-x-2 lg:space-x-3 border-l border-gray-200 pl-3 lg:pl-4">
+                <Link href="/auth/signin" className="btn-secondary text-xs sm:text-sm px-2 py-1.5">
                   Sign In
                 </Link>
-                <Link href="/auth/signup" className="btn-primary text-sm">
+                <Link href="/auth/signup" className="btn-primary text-xs sm:text-sm px-2 py-1.5">
                   Sign Up
                 </Link>
               </div>
@@ -86,7 +86,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-gray-700 hover:text-red-600"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -98,7 +98,7 @@ export function Navbar() {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
               href="/donors"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
+              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(false)}
             >
               Find Donors
@@ -109,7 +109,7 @@ export function Navbar() {
                 {session.user.role === 'DONOR' && (
                   <Link
                     href="/dashboard"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
+                    className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Dashboard
@@ -119,7 +119,7 @@ export function Navbar() {
                 {(session.user.role === 'MODERATOR' || session.user.role === 'ADMIN') && (
                   <Link
                     href="/moderator"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
+                    className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Moderator
@@ -129,15 +129,15 @@ export function Navbar() {
                 {session.user.role === 'ADMIN' && (
                   <Link
                     href="/admin"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
+                    className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Admin
                   </Link>
                 )}
 
-                <div className="px-3 py-2">
-                  <p className="text-sm text-gray-700 font-medium mb-2">{session.user.name}</p>
+                <div className="px-3 py-2 border-t border-gray-200">
+                  <p className="text-xs sm:text-sm text-gray-700 font-medium mb-2 truncate">{session.user.name}</p>
                   <button
                     onClick={() => {
                       signOut({ callbackUrl: '/' });
@@ -150,7 +150,7 @@ export function Navbar() {
                 </div>
               </>
             ) : (
-              <div className="px-3 py-2 space-y-2">
+              <div className="px-3 py-2 border-t border-gray-200 space-y-2">
                 <Link
                   href="/auth/signin"
                   className="btn-secondary text-sm block text-center"
