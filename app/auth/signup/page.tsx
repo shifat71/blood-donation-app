@@ -150,8 +150,8 @@ export default function SignUp() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/auth/signin');
-      }, 3000);
+        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      }, 2000);
     } catch {
       setError('An error occurred. Please try again.');
     } finally {

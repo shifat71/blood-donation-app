@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import VerificationUpload from '@/components/VerificationUpload';
-import { User, Droplet, CheckCircle, XCircle, Clock, Camera, Phone, MapPin, Calendar, Mail, History, Plus, Grid3x3, X, Edit2, Activity, Award, Heart } from 'lucide-react';
+import { User, Droplet, CheckCircle, XCircle, Clock, Camera, Phone, MapPin, Calendar, Mail, History, Plus, Grid3x3, X, Edit2, Activity, Heart, Building2 } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Post = {
@@ -206,6 +206,12 @@ export default function Dashboard() {
   };
 
   const handleSaveProfile = async () => {
+    // Check if trying to mark as available within 90 days
+    if (profile && !profile.isAvailable && formData.isAvailable && !canDonateAgain()) {
+      alert(`Cannot mark as available. Must wait ${90 - (getDaysSinceLastDonation() || 0)} days after last donation.`);
+      return;
+    }
+
     setSaving(true);
     try {
       const method = profile ? 'PUT' : 'POST';
@@ -404,37 +410,43 @@ export default function Dashboard() {
       
       <main className="flex-grow py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Header with Profile Card */}
-          <div className="mb-6 md:mb-8">
-            <div className="bg-gradient-to-r from-red-500 via-red-600 to-rose-600 rounded-2xl md:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-              
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          {/* Hero Header - Modern Minimal Design */}
+          <div className="mb-2 md:mb-6">
+            <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 relative">
+              {profile && (
+                <button
+                  onClick={() => setActiveTab('edit')}
+                  className="md:hidden absolute top-2 right-2 text-gray-600 hover:text-gray-900 transition-colors bg-white rounded-full p-1.5 shadow-md hover:shadow-lg border border-gray-200 z-10"
+                  title="Edit Profile"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              )}
+              <div className="flex items-start gap-3 md:gap-4">
                 {/* Profile Picture */}
-                <div className="relative group">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden bg-white/20 border-4 border-white shadow-xl ring-4 ring-red-300/50">
+                <div className="relative group flex-shrink-0 z-0">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
                     {profile?.profilePicture ? (
                       <Image
                         src={profile.profilePicture}
                         alt={session?.user.name || 'Profile'}
-                        width={128}
-                        height={128}
+                        width={80}
+                        height={80}
                         className="w-full h-full object-cover"
                         unoptimized
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-400 to-red-600">
-                        <User className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-white" />
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                        <User className="w-8 h-8 md:w-10 md:h-10 text-gray-500" />
                       </div>
                     )}
                   </div>
                   {profile && activeTab === 'edit' && (
                     <label
                       htmlFor="hero-profile-upload"
-                      className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300"
+                      className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all z-20"
                     >
-                      <Camera className="w-8 h-8 text-white" />
+                      <Camera className="w-5 h-5 text-white" />
                       <input
                         id="hero-profile-upload"
                         type="file"
@@ -448,51 +460,76 @@ export default function Dashboard() {
                 </div>
 
                 {/* Profile Info */}
-                <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{session?.user.name || 'Donor'}</h1>
-                  <p className="text-red-100 text-sm sm:text-base md:text-lg mb-3 md:mb-4">{session?.user.email}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">{session?.user.name || 'Donor'}</h1>
+                    {session?.user.isVerified && (
+                      <svg className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="11" fill="#25D366"/>
+                        <path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                    )}
+                  </div>
+                  <p className="text-xs md:text-sm text-gray-500 truncate mb-2 md:mb-3">{session?.user.email}</p>
                   
                   {profile && (
-                    <div className="flex flex-wrap gap-2 md:gap-3 justify-center md:justify-start">
-                      <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl flex items-center gap-1.5 md:gap-2 border border-white/30">
-                        <Droplet className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="font-bold text-base md:text-lg">{profile.bloodGroup.replace('_', ' ')}</span>
-                      </div>
-                      <div className={`backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl flex items-center gap-1.5 md:gap-2 border text-sm md:text-base ${
+                    <div className="flex flex-wrap gap-1.5 md:gap-2 relative z-0">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 bg-red-50 text-red-700 rounded-md text-xs md:text-sm font-medium border border-red-200">
+                        <Droplet className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        {profile.bloodGroup.replace('_', ' ')}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-xs md:text-sm font-medium border ${
                         profile.isAvailable 
-                          ? 'bg-green-500/30 border-green-300/50' 
-                          : 'bg-gray-500/30 border-gray-300/50'
+                          ? 'bg-green-50 text-green-700 border-green-200' 
+                          : 'bg-gray-50 text-gray-600 border-gray-200'
                       }`}>
                         {profile.isAvailable ? (
-                          <><CheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Available</>
+                          <><CheckCircle className="w-3 h-3 md:w-3.5 md:h-3.5" /> Available</>
                         ) : (
-                          <><XCircle className="w-4 h-4 md:w-5 md:h-5" /> Unavailable</>
+                          <><XCircle className="w-3 h-3 md:w-3.5 md:h-3.5" /> Unavailable</>
                         )}
-                      </div>
+                      </span>
                       {profile.currentDistrict && (
-                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl flex items-center gap-1.5 md:gap-2 border border-white/30 text-sm md:text-base">
-                          <MapPin className="w-4 h-4 md:w-5 md:h-5" />
-                          <span>{profile.currentDistrict}</span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 bg-blue-50 text-blue-700 rounded-md text-xs md:text-sm font-medium border border-blue-200">
+                          <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                          {profile.currentDistrict}
+                        </span>
                       )}
+
+                      <span className="inline-flex md:hidden items-center gap-1 px-2 py-0.5 bg-gray-50 text-gray-700 rounded-md text-xs font-medium border border-gray-200">
+                        <Heart className="w-3 h-3" />
+                        {posts.length}
+                      </span>
+                      <span className="inline-flex md:hidden items-center gap-1 px-2 py-0.5 bg-gray-50 text-gray-700 rounded-md text-xs font-medium border border-gray-200">
+                        <Activity className="w-3 h-3" />
+                        {profile.lastDonationDate ? getDaysSinceLastDonation() : '-'}d
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* Quick Stats */}
+                {/* Stats - Desktop */}
                 {profile && (
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 w-full md:w-auto">
-                    <div className="bg-white/20 backdrop-blur-sm p-3 md:p-4 rounded-xl md:rounded-2xl text-center border border-white/30">
-                      <Heart className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
-                      <div className="text-xl md:text-2xl font-bold">{posts.length}</div>
-                      <div className="text-xs md:text-sm text-red-100">Posts</div>
-                    </div>
-                    <div className="bg-white/20 backdrop-blur-sm p-3 md:p-4 rounded-xl md:rounded-2xl text-center border border-white/30">
-                      <Activity className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
-                      <div className="text-xl md:text-2xl font-bold">
-                        {profile.lastDonationDate ? getDaysSinceLastDonation() : '-'}
+                  <div className="hidden md:flex flex-col items-end gap-2 flex-shrink-0 relative z-0">
+                    <button
+                      onClick={() => setActiveTab('edit')}
+                      className="text-gray-600 hover:text-gray-900 transition-colors bg-white rounded-full p-2 shadow-sm hover:shadow-md border border-gray-200"
+                      title="Edit Profile"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <div className="flex gap-3">
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-gray-900">{posts.length}</div>
+                        <div className="text-[10px] text-gray-500 uppercase tracking-wide">Posts</div>
                       </div>
-                      <div className="text-xs md:text-sm text-red-100">Days Since</div>
+                      <div className="w-px bg-gray-200"></div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-gray-900">
+                          {profile.lastDonationDate ? getDaysSinceLastDonation() : '-'}
+                        </div>
+                        <div className="text-[10px] text-gray-500 uppercase tracking-wide">Days</div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -510,55 +547,45 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Verification Status */}
-          {session?.user && (
-            <div className={`bg-white rounded-xl md:rounded-2xl shadow-lg mb-4 md:mb-8 overflow-hidden border-l-4 md:border-l-8 ${
-              session.user.isVerified 
-                ? 'border-l-green-500' 
-                : hasVerificationRequest 
+          {/* Verification Status - Only show if not verified */}
+          {session?.user && !session.user.isVerified && (
+            <div className={`bg-white rounded-lg md:rounded-2xl shadow-lg mb-2 md:mb-8 overflow-hidden border-l-2 md:border-l-8 ${
+              hasVerificationRequest 
                 ? 'border-l-blue-500' 
                 : 'border-l-amber-500'
             }`}>
-              <div className="p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center space-x-3 md:space-x-5">
-                  <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md ${
-                    session.user.isVerified 
-                      ? 'bg-gradient-to-br from-green-400 to-green-600' 
-                      : hasVerificationRequest 
+              <div className="p-2 md:p-6 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 md:gap-4 flex-1 min-w-0">
+                  <div className={`p-1.5 md:p-4 rounded-lg md:rounded-2xl shadow-md flex-shrink-0 ${
+                    hasVerificationRequest 
                       ? 'bg-gradient-to-br from-blue-400 to-blue-600' 
                       : 'bg-gradient-to-br from-amber-400 to-amber-600'
                   }`}>
-                    {session.user.isVerified ? (
-                      <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                    ) : hasVerificationRequest ? (
-                      <Clock className="h-6 w-6 md:h-8 md:w-8 text-white" />
+                    {hasVerificationRequest ? (
+                      <Clock className="h-4 w-4 md:h-8 md:w-8 text-white" />
                     ) : (
-                      <XCircle className="h-6 w-6 md:h-8 md:w-8 text-white" />
+                      <XCircle className="h-4 w-4 md:h-8 md:w-8 text-white" />
                     )}
                   </div>
-                  <div>
-                    <h3 className="text-base md:text-xl font-bold text-gray-900 mb-1">
-                      {session.user.isVerified 
-                        ? '✓ Verified Account' 
-                        : hasVerificationRequest 
-                        ? 'Verification Pending' 
-                        : 'Unverified Account'}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs md:text-xl font-bold text-gray-900">
+                      {hasVerificationRequest 
+                        ? 'Pending' 
+                        : 'Unverified'}
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {session.user.isVerified 
-                        ? 'Your account is verified and active in our donor database' 
-                        : hasVerificationRequest
-                        ? 'Your verification request is being reviewed by our team'
-                        : 'Please verify your account to appear in donor search results'}
+                    <p className="text-[10px] md:text-sm text-gray-600 truncate">
+                      {hasVerificationRequest
+                        ? 'Being reviewed'
+                        : 'Verify to appear'}
                     </p>
                   </div>
                 </div>
-                {!session.user.isVerified && !hasVerificationRequest && (
+                {!hasVerificationRequest && (
                   <button
                     onClick={() => setShowVerificationForm(!showVerificationForm)}
-                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm md:text-base w-full sm:w-auto"
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-2.5 py-1.5 md:px-6 md:py-3 rounded-md md:rounded-xl shadow-lg hover:shadow-xl transition-all text-[10px] md:text-base whitespace-nowrap flex-shrink-0"
                   >
-                    Submit Verification
+                    Verify
                   </button>
                 )}
               </div>
@@ -575,44 +602,31 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Tabs Navigation */}
-          <div className="mb-4 md:mb-6">
-            <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-1.5 md:p-2 flex gap-1 md:gap-2">
+          {/* Tabs Navigation - Instagram Style */}
+          <div className="mb-1 md:mb-6 border-t border-gray-200">
+            <div className="flex">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`flex-1 px-3 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl font-semibold transition-all flex items-center justify-center gap-1.5 md:gap-2 text-sm md:text-base ${
+                className={`flex-1 py-1.5 md:py-3 flex items-center justify-center gap-0.5 md:gap-2 font-medium transition-all border-t-2 -mt-[1px] ${
                   activeTab === 'overview'
-                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'border-gray-900 text-gray-900'
+                    : 'border-transparent text-gray-400'
                 }`}
               >
-                <Activity className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="hidden sm:inline">Overview</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('edit')}
-                className={`flex-1 px-3 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl font-semibold transition-all flex items-center justify-center gap-1.5 md:gap-2 text-sm md:text-base ${
-                  activeTab === 'edit'
-                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="hidden sm:inline">{profile ? 'Edit Profile' : 'Create Profile'}</span>
-                <span className="sm:hidden">{profile ? 'Edit' : 'Create'}</span>
+                <Activity className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                <span className="text-[9px] md:text-sm uppercase tracking-wide font-semibold">Overview</span>
               </button>
               {profile && (
                 <button
                   onClick={() => setActiveTab('posts')}
-                  className={`flex-1 px-3 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl font-semibold transition-all flex items-center justify-center gap-1.5 md:gap-2 text-sm md:text-base ${
+                  className={`flex-1 py-1.5 md:py-3 flex items-center justify-center gap-0.5 md:gap-2 font-medium transition-all border-t-2 -mt-[1px] ${
                     activeTab === 'posts'
-                      ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'border-gray-900 text-gray-900'
+                      : 'border-transparent text-gray-400'
                   }`}
                 >
-                  <Grid3x3 className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="hidden sm:inline">Posts ({posts.length})</span>
-                  <span className="sm:hidden">({posts.length})</span>
+                  <Grid3x3 className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                  <span className="text-[9px] md:text-sm uppercase tracking-wide font-semibold">Posts</span>
                 </button>
               )}
             </div>
@@ -623,25 +637,51 @@ export default function Dashboard() {
             {/* Overview Tab */}
             {activeTab === 'overview' && profile && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                {/* Contact Information Card */}
+                {/* Contact & Academic Information Card */}
                 <div className="lg:col-span-2">
-                  <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
-                    {/* Contact Actions */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                    {/* Academic Info - Top Section */}
+                    {(profile.studentId || profile.department || profile.session) && (
+                      <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50 px-3 py-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {profile.studentId && (
+                            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:shadow-sm transition-all">
+                              <User className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                              <span className="text-xs font-medium text-slate-900 truncate">{profile.studentId}</span>
+                            </div>
+                          )}
+                          {profile.department && (
+                            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:shadow-sm transition-all">
+                              <Building2 className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                              <span className="text-xs font-medium text-slate-900 truncate">{profile.department}</span>
+                            </div>
+                          )}
+                          {profile.session && (
+                            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:shadow-sm transition-all">
+                              <Calendar className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                              <span className="text-xs font-medium text-slate-900 truncate">{profile.session}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Contact Info - Bottom Section */}
+                    <div className="p-2 space-y-1">
+                      {/* Email - Clickable */}
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(profile.user.email);
                           setCopiedText('Email copied!');
                           setTimeout(() => setCopiedText(''), 2000);
                         }}
-                        className="group bg-gradient-to-br from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100 border border-red-200 p-3 rounded-xl transition-all hover:shadow-md active:scale-95 text-left"
+                        className="w-full flex items-center gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left group"
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Mail className="h-4 w-4 text-red-600" />
-                          <span className="text-xs font-semibold text-red-700">Email</span>
-                        </div>
-                        <p className="text-xs text-gray-700 font-medium truncate">{profile.user.email}</p>
+                        <Mail className="h-5 w-5 text-slate-400 flex-shrink-0 group-hover:text-red-500" />
+                        <p className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-slate-900">{profile.user.email}</p>
                       </button>
+
+                      {/* Phone - Clickable */}
                       {profile.phoneNumber && (
                         <button
                           onClick={() => {
@@ -649,15 +689,14 @@ export default function Dashboard() {
                             setCopiedText('Phone copied!');
                             setTimeout(() => setCopiedText(''), 2000);
                           }}
-                          className="group bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 border border-blue-200 p-3 rounded-xl transition-all hover:shadow-md active:scale-95 text-left"
+                          className="w-full flex items-center gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left group"
                         >
-                          <div className="flex items-center gap-2 mb-1">
-                            <Phone className="h-4 w-4 text-blue-600" />
-                            <span className="text-xs font-semibold text-blue-700">Call</span>
-                          </div>
-                          <p className="text-xs text-gray-700 font-medium">{profile.phoneNumber}</p>
+                          <Phone className="h-5 w-5 text-slate-400 flex-shrink-0 group-hover:text-blue-500" />
+                          <p className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-slate-900">{profile.phoneNumber}</p>
                         </button>
                       )}
+
+                      {/* Location - Clickable */}
                       {profile.address && (
                         <button
                           onClick={() => {
@@ -665,49 +704,13 @@ export default function Dashboard() {
                             setCopiedText('Address copied!');
                             setTimeout(() => setCopiedText(''), 2000);
                           }}
-                          className="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 p-3 rounded-xl transition-all hover:shadow-md active:scale-95 text-left sm:col-span-2 lg:col-span-1"
+                          className="w-full flex items-center gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left group"
                         >
-                          <div className="flex items-center gap-2 mb-1">
-                            <MapPin className="h-4 w-4 text-green-600" />
-                            <span className="text-xs font-semibold text-green-700">Location</span>
-                          </div>
-                          <p className="text-xs text-gray-700 font-medium truncate">{profile.address}</p>
+                          <MapPin className="h-5 w-5 text-slate-400 flex-shrink-0 group-hover:text-green-500" />
+                          <p className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-slate-900">{profile.address}</p>
                         </button>
                       )}
                     </div>
-                    
-                    {/* Academic Info */}
-                    {(profile.studentId || profile.department || profile.session) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                        {profile.studentId && (
-                          <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 p-3 rounded-xl">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Award className="h-4 w-4 text-purple-600" />
-                              <span className="text-xs font-semibold text-purple-700">Student ID</span>
-                            </div>
-                            <p className="text-xs text-gray-700 font-medium">{profile.studentId}</p>
-                          </div>
-                        )}
-                        {profile.department && (
-                          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 p-3 rounded-xl">
-                            <div className="flex items-center gap-2 mb-1">
-                              <User className="h-4 w-4 text-indigo-600" />
-                              <span className="text-xs font-semibold text-indigo-700">Department</span>
-                            </div>
-                            <p className="text-xs text-gray-700 font-medium">{profile.department}</p>
-                          </div>
-                        )}
-                        {profile.session && (
-                          <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 p-3 rounded-xl">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Calendar className="h-4 w-4 text-orange-600" />
-                              <span className="text-xs font-semibold text-orange-700">Session</span>
-                            </div>
-                            <p className="text-xs text-gray-700 font-medium">{profile.session}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                   
                   {/* Copy Toast */}
@@ -969,18 +972,6 @@ export default function Dashboard() {
 
                   <div>
                     <label className="block text-xs md:text-sm font-semibold text-gray-800 mb-2">
-                      Last Donation Date
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full px-3 py-2.5 md:px-4 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-sm md:text-base"
-                      value={formData.lastDonationDate}
-                      onChange={(e) => setFormData({...formData, lastDonationDate: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs md:text-sm font-semibold text-gray-800 mb-2">
                       Current District
                     </label>
                     <select
@@ -1166,31 +1157,26 @@ export default function Dashboard() {
 
             {/* Posts Tab */}
             {activeTab === 'posts' && profile && (
-              <div className="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 border border-gray-100">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 gap-3">
-                  <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2 md:gap-3">
-                      <Grid3x3 className="h-6 w-6 md:h-7 md:w-7 text-red-600" />
-                      My Posts
-                    </h3>
-                    <p className="text-gray-500 mt-1 text-sm md:text-base">Share your donation journey</p>
-                  </div>
-                  <button
-                    onClick={() => setShowUpload(true)}
-                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm md:text-base w-full sm:w-auto justify-center"
-                  >
-                    <Plus className="w-4 h-4 md:w-5 md:h-5" />
-                    Add Post
-                  </button>
-                </div>
+              <div className="space-y-4">
+                {/* Upload Button - Modern Style */}
+                <button
+                  onClick={() => setShowUpload(true)}
+                  className="w-full group relative overflow-hidden bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold px-4 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:scale-105 duration-200"
+                >
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
+                  <Plus className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10">Add New Post</span>
+                </button>
 
                 {posts.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-                    {posts.map((post) => (
-                      <div key={post.id} className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all">
+                  <>
+                    {/* Gallery Grid - Instagram Style */}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-1.5 p-1 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-sm">
+                      {posts.map((post) => (
                         <button
+                          key={post.id}
                           onClick={() => setSelectedPost(post)}
-                          className="absolute inset-0 cursor-pointer"
+                          className="group relative aspect-square overflow-hidden bg-gray-200 cursor-pointer rounded-lg transition-all hover:shadow-lg"
                         >
                           <Image 
                             src={post.imageUrl} 
@@ -1199,47 +1185,44 @@ export default function Dashboard() {
                             className="object-cover group-hover:scale-110 transition-transform duration-300" 
                             unoptimized 
                           />
-                          {post.caption && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <p className="text-white text-xs md:text-sm line-clamp-2">{post.caption}</p>
+                          {/* Overlay with Icons */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                              <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                              <span className="text-xs font-semibold text-gray-900">View</span>
                             </div>
-                          )}
+                          </div>
                         </button>
-                        <div className="absolute top-1 right-1 md:top-2 md:right-2 flex gap-1 z-10">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingPost(post);
-                              setEditCaption(post.caption || '');
-                            }}
-                            className="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded-lg shadow-lg transition-all"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeletePost(post.id);
-                            }}
-                            className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-lg transition-all"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                      ))}
+                    </div>
+
+                    {/* Post Count */}
+                    <div className="flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50 p-3.5 rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                          <Grid3x3 className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs text-gray-600">Total Posts</p>
+                          <p className="text-lg font-bold text-gray-900">{posts.length}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <Camera className="w-5 h-5 text-gray-400" />
+                    </div>
+                  </>
                 ) : (
-                  <div className="text-center py-10 md:py-16 bg-gradient-to-br from-gray-50 to-red-50/30 rounded-xl md:rounded-2xl border-2 border-dashed border-gray-300">
-                    <Grid3x3 className="h-12 w-12 md:h-16 md:w-16 text-gray-400 mx-auto mb-3 md:mb-4" />
-                    <p className="text-gray-600 font-semibold mb-2 text-sm md:text-base">No posts yet</p>
-                    <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4 px-4">Share your donation experience with the community</p>
+                  <div className="flex flex-col items-center justify-center py-12 px-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl border-2 border-dashed border-gray-300 group hover:border-gray-400 transition-colors">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 blur-lg opacity-20 rounded-full"></div>
+                      <Camera className="h-16 w-16 text-gray-300 relative" />
+                    </div>
+                    <p className="text-gray-600 font-bold mb-1 text-base">Share Your Story</p>
+                    <p className="text-xs text-gray-500 mb-4">Upload photos from your donation journey</p>
                     <button
                       onClick={() => setShowUpload(true)}
-                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2 text-sm md:text-base"
+                      className="text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-all"
                     >
-                      <Plus className="w-4 h-4 md:w-5 md:h-5" />
-                      Upload Your First Post
+                      Create Your First Post
                     </button>
                   </div>
                 )}
@@ -1249,25 +1232,27 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Edit Post Modal */}
+      {/* Edit Post Modal - Modern Style */}
       {editingPost && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl md:rounded-2xl max-w-md w-full p-4 md:p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-4 md:mb-6">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900">Edit Caption</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-blue-50">
+              <h3 className="text-xl font-bold text-gray-900">Edit Caption</h3>
               <button 
                 onClick={() => {
                   setEditingPost(null);
                   setEditCaption('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-full p-1.5"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
             
-            <div className="space-y-3 md:space-y-4">
-              <div className="relative w-full h-48 md:h-64 rounded-lg md:rounded-xl overflow-hidden bg-gray-100">
+            <div className="p-5 space-y-4">
+              {/* Image */}
+              <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200">
                 <Image 
                   src={editingPost.imageUrl} 
                   alt="Post" 
@@ -1277,22 +1262,26 @@ export default function Dashboard() {
                 />
               </div>
 
+              {/* Caption Input */}
               <div>
-                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
                   Caption
                 </label>
                 <textarea
-                  className="w-full px-3 py-2.5 md:px-4 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm md:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm placeholder-gray-400"
                   placeholder="Update your caption..."
                   value={editCaption}
                   onChange={(e) => setEditCaption(e.target.value)}
-                  rows={3}
+                  maxLength={2200}
+                  rows={4}
                 />
+                <p className="text-xs text-gray-500 mt-1">{editCaption.length}/2200</p>
               </div>
 
+              {/* Save Button */}
               <button 
                 onClick={handleEditPost}
-                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-2.5 md:py-3 rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all text-sm md:text-base"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 duration-200"
               >
                 Save Changes
               </button>
@@ -1301,76 +1290,101 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Upload Post Modal */}
+      {/* Upload Post Modal - Modern Style */}
       {showUpload && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl md:rounded-2xl max-w-md w-full p-4 md:p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-4 md:mb-6">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900">Upload Post</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-blue-50">
+              <h3 className="text-xl font-bold text-gray-900">Create Post</h3>
               <button 
                 onClick={() => {
                   setShowUpload(false);
                   setImageFile(null);
                   setCaption('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-full p-1.5"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
             
-            <div className="space-y-3 md:space-y-4">
+            <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+              {/* Image Upload */}
               <div>
-                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
-                  Choose Image
+                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                  Photo
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full px-3 py-2.5 md:px-4 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-sm md:text-base"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.readAsDataURL(file);
-                      reader.onload = () => setImageFile(reader.result as string);
-                    }
-                  }}
-                />
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id="image-upload"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => setImageFile(reader.result as string);
+                      }
+                    }}
+                  />
+                  {!imageFile ? (
+                    <label htmlFor="image-upload" className="block w-full p-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all text-center">
+                      <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="font-semibold text-gray-700 text-sm">Select a photo</p>
+                      <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
+                    </label>
+                  ) : (
+                    <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200">
+                      <Image 
+                        src={imageFile} 
+                        alt="Preview" 
+                        fill 
+                        className="object-cover" 
+                        unoptimized 
+                      />
+                      <button
+                        onClick={() => {
+                          setImageFile(null);
+                          const input = document.getElementById('image-upload') as HTMLInputElement;
+                          if (input) input.value = '';
+                        }}
+                        className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-full p-1.5 transition-all"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {imageFile && (
-                <div className="relative w-full h-48 md:h-64 rounded-lg md:rounded-xl overflow-hidden bg-gray-100">
-                  <Image 
-                    src={imageFile} 
-                    alt="Preview" 
-                    fill 
-                    className="object-cover" 
-                    unoptimized 
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                    Caption
+                  </label>
+                  <textarea
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm placeholder-gray-400"
+                    placeholder="Write a caption... (optional)"
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    maxLength={2200}
+                    rows={4}
                   />
+                  <p className="text-xs text-gray-500 mt-1">{caption.length}/2200</p>
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
-                  Caption (optional)
-                </label>
-                <textarea
-                  className="w-full px-3 py-2.5 md:px-4 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm md:text-base"
-                  placeholder="Share your experience..."
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <button 
-                onClick={handleUploadPost} 
-                disabled={!imageFile}
-                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-2.5 md:py-3 rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
-              >
-                {imageFile ? 'Upload Post' : 'Select an Image First'}
-              </button>
+              {imageFile && (
+                <button 
+                  onClick={handleUploadPost}
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 duration-200"
+                >
+                  Post
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1378,17 +1392,18 @@ export default function Dashboard() {
 
       <Footer />
 
-      {/* Post Viewer Modal */}
+      {/* Post Viewer Modal - Instagram Style */}
       {selectedPost && (
-        <div className="fixed inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={() => setSelectedPost(null)}>
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setSelectedPost(null)}>
           <button
             onClick={() => setSelectedPost(null)}
-            className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition-colors z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10 bg-black/50 hover:bg-black/70 rounded-full p-2.5 backdrop-blur-sm"
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row gap-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex-1 relative rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center shadow-2xl">
+          <div className="max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row gap-0 rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Image Section */}
+            <div className="flex-1 relative bg-black flex items-center justify-center min-h-96 md:min-h-auto">
               <Image
                 src={selectedPost.imageUrl}
                 alt={selectedPost.caption || 'Post'}
@@ -1398,22 +1413,69 @@ export default function Dashboard() {
                 unoptimized
               />
             </div>
-            {selectedPost.caption && (
-              <div className="md:w-80 bg-white rounded-xl p-6 flex flex-col">
-                <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                    <User className="h-6 w-6 text-white" />
-                  </div>
+
+            {/* Details Section */}
+            <div className="md:w-96 bg-white flex flex-col shadow-xl">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  {profile?.profilePicture ? (
+                    <div className="w-10 h-10 relative rounded-full overflow-hidden border-2 border-gradient-to-r from-red-500 to-pink-500">
+                      <Image src={profile.profilePicture} alt={session?.user.name || 'User'} fill className="object-cover" unoptimized />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                  )}
                   <div>
-                    <p className="font-semibold text-gray-900">{session?.user.name}</p>
-                    <p className="text-xs text-gray-500">{new Date(selectedPost.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="font-bold text-sm text-gray-900">{session?.user.name}</p>
+                    <p className="text-xs text-gray-500">{new Date(selectedPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                   </div>
-                </div>
-                <div className="flex-1">
-                  <p className="text-gray-700 text-sm leading-relaxed">{selectedPost.caption}</p>
                 </div>
               </div>
-            )}
+
+              {/* Caption */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-5">
+                {selectedPost.caption ? (
+                  <div>
+                    <p className="text-gray-900 font-medium text-sm mb-2">{session?.user.name}</p>
+                    <p className="text-gray-700 text-sm leading-relaxed break-words">{selectedPost.caption}</p>
+                  </div>
+                ) : (
+                  <p className="text-gray-400 text-sm italic">No caption added</p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="border-t border-gray-100 p-4 md:p-5 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50">
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPost(null);
+                      setEditingPost(selectedPost);
+                      setEditCaption(selectedPost.caption || '');
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold text-sm py-2 px-3 rounded-lg transition-all"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPost(null);
+                      handleDeletePost(selectedPost.id);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold text-sm py-2 px-3 rounded-lg transition-all"
+                  >
+                    <X className="h-4 w-4" />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

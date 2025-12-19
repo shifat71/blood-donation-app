@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { resend } from '@/lib/resend';
 import { VerificationType } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
@@ -57,6 +58,10 @@ export async function POST(request: NextRequest) {
     
     console.log('[Register] Verification decision:', { isUniversityEmail, isAutoVerification, verificationType });
 
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -65,16 +70,39 @@ export async function POST(request: NextRequest) {
         name,
         isVerified: isAutoVerification && isUniversityEmail,
         verificationType: isAutoVerification ? VerificationType.AUTO : VerificationType.MANUAL,
+        otp,
+        otpExpiry,
       },
     });
 
     console.log('[Register] User created:', user.id, 'isVerified:', user.isVerified);
 
+    // Send OTP email
+    try {
+      await resend.emails.send({
+        from: 'Blood Donation App <onboarding@resend.dev>',
+        to: email,
+        subject: 'Verify Your Email - Blood Donation App',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #dc2626;">Welcome to Blood Donation App!</h2>
+            <p>Hi ${name},</p>
+            <p>Thank you for registering. Your verification code is:</p>
+            <h1 style="background: #fee2e2; color: #dc2626; padding: 20px; text-align: center; border-radius: 8px; letter-spacing: 8px;">
+              ${otp}
+            </h1>
+            <p>This code will expire in 10 minutes.</p>
+            <p style="color: #6b7280; font-size: 14px;">If you didn't create this account, please ignore this email.</p>
+          </div>
+        `,
+      });
+    } catch (emailError) {
+      console.error('[Register] Failed to send OTP email:', emailError);
+    }
+
     return NextResponse.json(
       {
-        message: user.isVerified
-          ? 'Account created and verified successfully'
-          : 'Account created. Awaiting verification.',
+        message: 'Account created. Please verify your email with the OTP sent.',
         user: {
           id: user.id,
           email: user.email,
