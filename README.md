@@ -14,7 +14,7 @@ The platform is designed with a strong focus on **authenticity**, **trust**, and
 | **Backend** | Next.js API Routes |
 | **Database** | PostgreSQL |
 | **ORM** | Prisma |
-| **Authentication** | Email-based & Manual Verification |
+| **Authentication** | NextAuth.js with Email-based & Manual Verification |
 | **UI/UX** | Clean, intuitive, and modern design principles |
 
 ---
@@ -27,7 +27,7 @@ The primary objective of this application is to build a **reliable blood donor n
 
 ## ✨ Core Features
 
-### 🧑‍🦰 Donor Registration & Verification
+### 🧑🦰 Donor Registration & Verification
 
 Donors can register through two methods:
 
@@ -42,37 +42,62 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 #### 👤 **Donor**
 
-- Create and manage a donor profile
-- Update blood group information
-- Update last donation date
-- Toggle donation availability status
+- Create and manage comprehensive donor profile
+- Update blood group, phone number, address, and district information
+- Update department and session details
+- Upload and manage profile picture
+- Update last donation date with automatic availability tracking
+- Toggle donation availability status (restricted to 90 days after last donation)
+- Create, edit, and delete posts with images and captions
+- View personal donation history and statistics
 - Maintain accurate and up-to-date blood donation information
 
-#### 🧑‍⚖️ **Moderator**
+#### 🧑⚖️ **Moderator**
 
 - Access a dedicated moderator dashboard
 - Verify donor profiles submitted for manual verification
 - Update or correct donor information
 - Approve or reject donor registrations
+- Monitor platform activity
 
 #### 👑 **System Admin**
 
 - Full access to the moderator dashboard
 - Add and manage moderators
 - Oversee the entire verification workflow
+- System-wide configuration and management
  
 
 ### 📊 Dashboards
+
+#### **Donor Dashboard**
+
+- **Overview Tab**: View complete profile information and verification status
+- **Edit Tab**: Update personal information, blood donation details, and profile picture
+- **Posts Tab**: Manage personal posts with image upload, edit, and delete capabilities
+- Real-time donation eligibility tracking (90-day rule)
+- Profile completion status indicators
 
 #### **Moderator Dashboard**
 
 - Review and approve pending donor verifications
 - Edit donor information when required
+- Access to verification requests queue
 
 #### **Admin Dashboard**
 
 - Includes all moderator capabilities
 - Manage moderator accounts and permissions
+- Platform oversight and analytics
+
+---
+
+### 📱 Social Features
+
+- **Post Creation**: Upload images with captions to share donation experiences
+- **Post Management**: Edit captions and delete posts
+- **Profile Customization**: Upload profile pictures and personalize donor profiles
+- **Activity Feed**: View and manage personal posts in a grid layout
 
 ---
 
@@ -82,16 +107,22 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - ✅ Intuitive navigation inspired by social platforms
 - ✅ Responsive design for all devices
 - ✅ Clear visual indicators for verification and availability status
+- ✅ Tab-based navigation for organized content
+- ✅ Real-time feedback and success notifications
 
 ---
 
 ## 🧩 Future Improvements (Planned)
 
-- [ ] Search and filter donors by blood group and availability
-- [ ] Location-based donor discovery
+- [ ] Public donor search and filter by blood group and availability
+- [ ] Location-based donor discovery with map integration
 - [ ] Notification system for urgent blood requests
-- [ ] Donation history analytics
+- [ ] Donation history analytics and insights
 - [ ] Privacy controls for donor information
+- [ ] Public feed for all donor posts
+- [ ] Commenting and interaction features
+- [ ] Emergency blood request system
+- [ ] Mobile app version
 
 ---
 
