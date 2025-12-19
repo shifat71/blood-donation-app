@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X, Edit, CheckCircle } from 'lucide-react';
+import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X, Edit, CheckCircle, Building2 } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Post = {
@@ -263,88 +263,81 @@ export default function DonorProfilePage() {
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(donor.user.email);
-                    setCopiedText('Email copied!');
-                    setTimeout(() => setCopiedText(''), 2000);
-                  }}
-                  className="group bg-gradient-to-br from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100 border border-red-200 p-3 rounded-xl transition-all hover:shadow-md active:scale-95 text-left"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Mail className="h-4 w-4 text-red-600" />
-                    <span className="text-xs font-semibold text-red-700">Email</span>
+            <div className="border-t pt-4">
+              {/* Combined Contact & Academic Info Card */}
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                {/* Academic Info - Top Section */}
+                {(donor.studentId || donor.department || donor.session) && (
+                  <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50 px-3 py-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {donor.studentId && (
+                          <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:shadow-sm transition-all">
+                          <User className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                          <span className="text-xs font-medium text-slate-900 truncate">{donor.studentId}</span>
+                        </div>
+                      )}
+                      {donor.department && (
+                        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:shadow-sm transition-all">
+                          <Building2 className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                          <span className="text-xs font-medium text-slate-900 truncate">{donor.department}</span>
+                        </div>
+                      )}
+                      {donor.session && (
+                        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:shadow-sm transition-all">
+                          <Calendar className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                          <span className="text-xs font-medium text-slate-900 truncate">{donor.session}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-700 font-medium truncate">{donor.user.email}</p>
-                </button>
-                {donor.phoneNumber && (
+                )}
+
+                {/* Contact Info - Bottom Section */}
+                <div className="p-2 space-y-1">
+                  {/* Email - Clickable */}
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(donor.phoneNumber!);
-                      setCopiedText('Phone copied!');
+                      navigator.clipboard.writeText(donor.user.email);
+                      setCopiedText('Email copied!');
                       setTimeout(() => setCopiedText(''), 2000);
                     }}
-                    className="group bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 border border-blue-200 p-3 rounded-xl transition-all hover:shadow-md active:scale-95 text-left"
+                    className="w-full flex items-center gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left group"
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Phone className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-semibold text-blue-700">Call</span>
-                    </div>
-                    <p className="text-xs text-gray-700 font-medium">{donor.phoneNumber}</p>
+                    <Mail className="h-5 w-5 text-slate-400 flex-shrink-0 group-hover:text-red-500" />
+                    <p className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-slate-900">{donor.user.email}</p>
                   </button>
-                )}
-                {donor.address && (
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(donor.address!);
-                      setCopiedText('Address copied!');
-                      setTimeout(() => setCopiedText(''), 2000);
-                    }}
-                    className="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 p-3 rounded-xl transition-all hover:shadow-md active:scale-95 text-left sm:col-span-2 lg:col-span-1"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <MapPin className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-semibold text-green-700">Location</span>
-                    </div>
-                    <p className="text-xs text-gray-700 font-medium truncate">{donor.address}</p>
-                  </button>
-                )}
-              </div>
-              
-              {/* Academic Info */}
-              {(donor.studentId || donor.department || donor.session) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                  {donor.studentId && (
-                    <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 p-3 rounded-xl">
-                      <div className="flex items-center gap-2 mb-1">
-                        <User className="h-4 w-4 text-purple-600" />
-                        <span className="text-xs font-semibold text-purple-700">Student ID</span>
-                      </div>
-                      <p className="text-xs text-gray-700 font-medium">{donor.studentId}</p>
-                    </div>
+
+                  {/* Phone - Clickable */}
+                  {donor.phoneNumber && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(donor.phoneNumber!);
+                        setCopiedText('Phone copied!');
+                        setTimeout(() => setCopiedText(''), 2000);
+                      }}
+                      className="w-full flex items-center gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left group"
+                    >
+                      <Phone className="h-5 w-5 text-slate-400 flex-shrink-0 group-hover:text-blue-500" />
+                      <p className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-slate-900">{donor.phoneNumber}</p>
+                    </button>
                   )}
-                  {donor.department && (
-                    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 p-3 rounded-xl">
-                      <div className="flex items-center gap-2 mb-1">
-                        <User className="h-4 w-4 text-indigo-600" />
-                        <span className="text-xs font-semibold text-indigo-700">Department</span>
-                      </div>
-                      <p className="text-xs text-gray-700 font-medium">{donor.department}</p>
-                    </div>
-                  )}
-                  {donor.session && (
-                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 p-3 rounded-xl">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="h-4 w-4 text-orange-600" />
-                        <span className="text-xs font-semibold text-orange-700">Session</span>
-                      </div>
-                      <p className="text-xs text-gray-700 font-medium">{donor.session}</p>
-                    </div>
+
+                  {/* Location - Clickable */}
+                  {donor.address && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(donor.address!);
+                        setCopiedText('Address copied!');
+                        setTimeout(() => setCopiedText(''), 2000);
+                      }}
+                      className="w-full flex items-center gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-all text-left group"
+                    >
+                      <MapPin className="h-5 w-5 text-slate-400 flex-shrink-0 group-hover:text-green-500" />
+                      <p className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-slate-900">{donor.address}</p>
+                    </button>
                   )}
                 </div>
-              )}
+              </div>
               
               {/* Copy Toast */}
               {copiedText && (
