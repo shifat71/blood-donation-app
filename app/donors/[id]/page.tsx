@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X, Edit, CheckCircle, Building2 } from 'lucide-react';
+import { Droplet, Phone, MapPin, Calendar, Mail, ArrowLeft, User, History, Plus, Grid3x3, X, Edit, CheckCircle, Building2, XCircle } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Post = {
@@ -51,6 +51,7 @@ export default function DonorProfilePage() {
   const [imageFile, setImageFile] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [copiedText, setCopiedText] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [editForm, setEditForm] = useState({
     userName: '',
     bloodGroup: '',
@@ -66,6 +67,11 @@ export default function DonorProfilePage() {
 
   const bloodGroups = Object.values(BloodGroup);
   const isModeratorOrAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR';
+
+  const showError = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 4000);
+  };
 
   useEffect(() => {
     fetchDonor();
@@ -127,11 +133,11 @@ export default function DonorProfilePage() {
         setCaption('');
         fetchPosts();
       } else {
-        alert('Upload failed: ' + (data.error || 'Unknown error'));
+        showError('Upload failed: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error uploading post:', error);
-      alert('Error uploading photo');
+      showError('Error uploading photo');
     }
   };
 
@@ -172,11 +178,11 @@ export default function DonorProfilePage() {
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
         const data = await response.json();
-        alert('Error: ' + (data.error || 'Failed to update profile'));
+        showError(data.error || 'Failed to update profile');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile');
+      showError('Error updating profile');
     } finally {
       setEditLoading(false);
     }
@@ -226,6 +232,13 @@ export default function DonorProfilePage() {
             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
               <p className="text-green-800 font-medium">{successMessage}</p>
+            </div>
+          )}
+
+          {errorMessage && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-600" />
+              <p className="text-red-800 font-medium">{errorMessage}</p>
             </div>
           )}
 

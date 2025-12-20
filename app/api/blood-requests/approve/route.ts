@@ -30,6 +30,9 @@ export async function POST(req: Request) {
       },
     });
 
+    let emailsSent = 0;
+    const emailErrors: string[] = [];
+
     if (action === 'approve') {
       // First, auto-update availability for donors whose 90-day period has passed
       const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
@@ -61,40 +64,79 @@ export async function POST(req: Request) {
         },
       });
 
-      const emailPromises = donors.map((donor) =>
-        resend.emails.send({
-          from: 'Blood Donation <onboarding@resend.dev>',
-          to: donor.user.email,
-          subject: `🩸 Urgent: ${bloodRequest.bloodGroup.replace('_', ' ')} Blood Needed`,
-          html: `
-            <h2>Blood Donation Request</h2>
-            <p>Dear ${donor.user.name},</p>
-            <p>A blood donation request has been approved that matches your blood group.</p>
-            <h3>Request Details:</h3>
-            <ul>
-              <li><strong>Blood Group:</strong> ${bloodRequest.bloodGroup.replace('_', ' ')}</li>
-              <li><strong>Patient:</strong> ${bloodRequest.patientName || 'N/A'}</li>
-              <li><strong>Location:</strong> ${bloodRequest.location}</li>
-              <li><strong>Hospital:</strong> ${bloodRequest.hospitalName || 'N/A'}</li>
-              <li><strong>Units Needed:</strong> ${bloodRequest.unitsNeeded}</li>
-              <li><strong>Urgency:</strong> ${bloodRequest.urgency}</li>
-            </ul>
-            <h3>Contact Information:</h3>
-            <ul>
-              <li><strong>Name:</strong> ${bloodRequest.requesterName}</li>
-              <li><strong>Phone:</strong> ${bloodRequest.requesterPhone}</li>
-              <li><strong>Email:</strong> ${bloodRequest.requesterEmail}</li>
-            </ul>
-            ${bloodRequest.additionalInfo ? `<p><strong>Additional Info:</strong> ${bloodRequest.additionalInfo}</p>` : ''}
-            <p>If you can donate, please contact the requester immediately.</p>
-          `,
-        })
-      );
+      console.log(`[Blood Request Approval] Found ${donors.length} matching donors for blood group ${bloodRequest.bloodGroup}`);
 
-      await Promise.allSettled(emailPromises);
+      // Send emails to each donor
+      for (const donor of donors) {
+        try {
+          console.log(`[Blood Request Approval] Sending email to: ${donor.user.email}`);
+          
+          const result = await resend.emails.send({
+            from: 'Blood Donation <onboarding@resend.dev>',
+            to: donor.user.email,
+            subject: `🩸 Urgent: ${bloodRequest.bloodGroup.replace('_', ' ')} Blood Needed`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 20px; text-align: center;">
+                  <h1 style="color: white; margin: 0;">🩸 Blood Donation Request</h1>
+                </div>
+                <div style="padding: 20px; background: #fff;">
+                  <p>Dear <strong>${donor.user.name}</strong>,</p>
+                  <p>A blood donation request has been approved that matches your blood group.</p>
+                  
+                  <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0;">
+                    <h3 style="color: #dc2626; margin-top: 0;">Request Details:</h3>
+                    <ul style="list-style: none; padding: 0;">
+                      <li>📍 <strong>Blood Group:</strong> ${bloodRequest.bloodGroup.replace('_', ' ')}</li>
+                      <li>👤 <strong>Patient:</strong> ${bloodRequest.patientName || 'N/A'}</li>
+                      <li>🏥 <strong>Hospital:</strong> ${bloodRequest.hospitalName || 'N/A'}</li>
+                      <li>📌 <strong>Location:</strong> ${bloodRequest.location}</li>
+                      <li>💉 <strong>Units Needed:</strong> ${bloodRequest.unitsNeeded}</li>
+                      <li>⚡ <strong>Urgency:</strong> ${bloodRequest.urgency}</li>
+                    </ul>
+                  </div>
+                  
+                  <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; margin: 20px 0;">
+                    <h3 style="color: #22c55e; margin-top: 0;">Contact Information:</h3>
+                    <ul style="list-style: none; padding: 0;">
+                      <li>👤 <strong>Name:</strong> ${bloodRequest.requesterName}</li>
+                      <li>📱 <strong>Phone:</strong> <a href="tel:${bloodRequest.requesterPhone}">${bloodRequest.requesterPhone}</a></li>
+                      <li>📧 <strong>Email:</strong> <a href="mailto:${bloodRequest.requesterEmail}">${bloodRequest.requesterEmail}</a></li>
+                    </ul>
+                  </div>
+                  
+                  ${bloodRequest.additionalInfo ? `<p style="background: #f3f4f6; padding: 10px; border-radius: 5px;"><strong>Additional Info:</strong> ${bloodRequest.additionalInfo}</p>` : ''}
+                  
+                  <p style="color: #dc2626; font-weight: bold;">If you can donate, please contact the requester immediately. Your donation can save a life!</p>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+                  <p>This email was sent by Blood Donation App</p>
+                </div>
+              </div>
+            `,
+          });
+          
+          console.log(`[Blood Request Approval] Email sent successfully to ${donor.user.email}:`, result);
+          emailsSent++;
+        } catch (emailError) {
+          const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
+          console.error(`[Blood Request Approval] Failed to send email to ${donor.user.email}:`, errorMessage);
+          emailErrors.push(`${donor.user.email}: ${errorMessage}`);
+        }
+      }
+
+      console.log(`[Blood Request Approval] Emails sent: ${emailsSent}/${donors.length}`);
+      if (emailErrors.length > 0) {
+        console.log(`[Blood Request Approval] Email errors:`, emailErrors);
+      }
     }
 
-    return NextResponse.json({ success: true, request: updatedRequest });
+    return NextResponse.json({ 
+      success: true, 
+      request: updatedRequest,
+      emailsSent,
+      emailErrors: emailErrors.length > 0 ? emailErrors : undefined,
+    });
   } catch (error) {
     console.error('Error approving request:', error);
     return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });

@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [showVerificationForm, setShowVerificationForm] = useState(false);
   const [hasVerificationRequest, setHasVerificationRequest] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [showDonationDateUpdate, setShowDonationDateUpdate] = useState(false);
   const [newDonationDate, setNewDonationDate] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -70,6 +71,11 @@ export default function Dashboard() {
     department: '',
     session: '',
   });
+
+  const showError = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 4000);
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -161,11 +167,11 @@ export default function Dashboard() {
         setSuccessMessage('Post uploaded successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
-        alert('Upload failed: ' + (data.error || 'Unknown error'));
+        showError('Upload failed: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error uploading post:', error);
-      alert('Error uploading photo');
+      showError('Error uploading photo');
     }
   };
 
@@ -186,7 +192,7 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error editing post:', error);
-      alert('Error editing post');
+      showError('Error editing post');
     }
   };
 
@@ -201,14 +207,14 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error deleting post:', error);
-      alert('Error deleting post');
+      showError('Error deleting post');
     }
   };
 
   const handleSaveProfile = async () => {
     // Check if trying to mark as available within 90 days
     if (profile && !profile.isAvailable && formData.isAvailable && !canDonateAgain()) {
-      alert(`Cannot mark as available. Must wait ${90 - (getDaysSinceLastDonation() || 0)} days after last donation.`);
+      showError(`Cannot mark as available. Must wait ${90 - (getDaysSinceLastDonation() || 0)} days after last donation.`);
       return;
     }
 
@@ -235,11 +241,11 @@ export default function Dashboard() {
           setActiveTab('overview');
         }, 2000);
       } else {
-        alert('Error: ' + (data.error || 'Failed to save profile'));
+        showError(data.error || 'Failed to save profile');
       }
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Error saving profile. Check console.');
+      showError('Error saving profile');
     } finally {
       setSaving(false);
     }
@@ -265,11 +271,11 @@ export default function Dashboard() {
         setTimeout(() => setShowSuccessModal(false), 2000);
       } else {
         const data = await response.json();
-        alert('Error: ' + (data.error || 'Failed to update donation date'));
+        showError(data.error || 'Failed to update donation date');
       }
     } catch (error) {
       console.error('Error updating donation date:', error);
-      alert('Error updating donation date. Check console.');
+      showError('Error updating donation date');
     }
   };
 
@@ -278,7 +284,7 @@ export default function Dashboard() {
     
     // Prevent marking as available if within 90 days
     if (!profile.isAvailable && !canDonateAgain()) {
-      alert(`You must wait ${90 - (getDaysSinceLastDonation() || 0)} more days after your last donation to become available.`);
+      showError(`You must wait ${90 - (getDaysSinceLastDonation() || 0)} more days after your last donation to become available.`);
       return;
     }
     
@@ -297,11 +303,11 @@ export default function Dashboard() {
         setTimeout(() => setShowSuccessModal(false), 2000);
       } else {
         const data = await response.json();
-        alert('Error: ' + (data.error || 'Failed to update availability'));
+        showError(data.error || 'Failed to update availability');
       }
     } catch (error) {
       console.error('Error updating availability:', error);
-      alert('Error updating availability. Check console.');
+      showError('Error updating availability');
     }
   };
 
@@ -311,13 +317,13 @@ export default function Dashboard() {
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      showError('File size must be less than 5MB');
       return;
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      showError('Please select an image file');
       return;
     }
 
@@ -353,7 +359,7 @@ export default function Dashboard() {
           setTimeout(() => setSuccessMessage(''), 3000);
         } else {
           console.error('Upload failed:', data);
-          alert('Error: ' + (data.error || 'Failed to upload profile picture'));
+          showError(data.error || 'Failed to upload profile picture');
           // Revert to previous image on error
           if (profile?.profilePicture) {
             setFormData({...formData, profilePicture: profile.profilePicture});
@@ -365,13 +371,13 @@ export default function Dashboard() {
         e.target.value = '';
       };
       reader.onerror = () => {
-        alert('Error reading file');
+        showError('Error reading file');
         setUploadingPhoto(false);
         e.target.value = '';
       };
     } catch (error) {
       console.error('Error uploading profile picture:', error);
-      alert('Error uploading profile picture');
+      showError('Error uploading profile picture');
       setUploadingPhoto(false);
       e.target.value = '';
     }
@@ -546,6 +552,16 @@ export default function Dashboard() {
                 <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <p className="text-green-900 font-semibold text-sm md:text-lg">{successMessage}</p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mb-4 md:mb-6 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 rounded-xl md:rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-lg animate-fade-in">
+              <div className="bg-red-500 p-2 md:p-3 rounded-full shadow-md">
+                <XCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <p className="text-red-900 font-semibold text-sm md:text-lg">{errorMessage}</p>
             </div>
           )}
 
@@ -849,7 +865,7 @@ export default function Dashboard() {
                 <div className="space-y-4 md:space-y-6">
                 {/* Modern Profile Picture Upload Section */}
                 <div className="bg-gradient-to-br from-gray-50 to-red-50/30 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200">
-                  <label className="block text-xs md:text-sm font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                  <label className="text-xs md:text-sm font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
                     <Camera className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
                     Profile Picture
                   </label>
@@ -914,7 +930,7 @@ export default function Dashboard() {
                 {/* Personal Information Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div>
-                    <label className="block text-xs md:text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <label className="text-xs md:text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
                       <Droplet className="w-4 h-4 text-red-600" />
                       Blood Group *
                     </label>
