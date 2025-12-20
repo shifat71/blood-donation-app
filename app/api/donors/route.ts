@@ -12,6 +12,20 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
+    // First, auto-update availability for donors whose 90-day period has passed
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    await prisma.donorProfile.updateMany({
+      where: {
+        isAvailable: false,
+        lastDonationDate: {
+          lte: ninetyDaysAgo,
+        },
+      },
+      data: {
+        isAvailable: true,
+      },
+    });
+
     const where: Prisma.DonorProfileWhereInput = {
       user: {
         isVerified: true,
