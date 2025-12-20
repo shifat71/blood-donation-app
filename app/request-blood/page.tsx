@@ -41,7 +41,7 @@ export default function RequestBloodPage() {
       } else {
         alert('Failed to submit request');
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Error submitting request');
     } finally {
       setLoading(false);

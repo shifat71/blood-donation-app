@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { RequestStatus, Prisma } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
@@ -42,9 +43,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
 
-    let where: any = {};
+    const where: Prisma.BloodRequestWhereInput = {};
     if (status) {
-      where.status = status;
+      where.status = status as RequestStatus;
     }
 
     if (session?.user?.role !== 'MODERATOR' && session?.user?.role !== 'ADMIN') {
