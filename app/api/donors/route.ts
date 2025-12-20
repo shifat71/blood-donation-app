@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching donors:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to load donors. Please try again.' },
       { status: 500 }
     );
   }

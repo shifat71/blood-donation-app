@@ -3,15 +3,27 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, otp } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const { email, otp } = body;
 
     if (!email || !otp) {
-      return NextResponse.json({ error: 'Email and OTP are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Email and verification code are required' }, { status: 400 });
+    }
+
+    // Validate OTP format (6 digits)
+    if (!/^\d{6}$/.test(otp)) {
+      return NextResponse.json({ error: 'Invalid verification code format' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'No account found with this email' }, { status: 404 });
     }
 
     if (user.emailVerified) {
@@ -39,9 +51,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ message: 'Email verified successfully' });
+    return NextResponse.json({ message: 'Email verified successfully! You can now sign in.' });
   } catch (error) {
     console.error('Error verifying OTP:', error);
-    return NextResponse.json({ error: 'Failed to verify OTP' }, { status: 500 });
+    return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 500 });
   }
 }
