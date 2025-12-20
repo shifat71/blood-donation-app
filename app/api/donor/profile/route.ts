@@ -13,7 +13,7 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const donorProfile = await prisma.donorProfile.findUnique({
+    let donorProfile = await prisma.donorProfile.findUnique({
       where: { userId: session.user.id },
       include: {
         user: {
@@ -31,6 +31,29 @@ export async function GET(_request: NextRequest) {
         { error: 'Donor profile not found' },
         { status: 404 }
       );
+    }
+
+    // Auto-update availability if 90 days have passed since last donation
+    // and the donor is currently marked as unavailable
+    if (donorProfile.lastDonationDate && !donorProfile.isAvailable) {
+      const daysSinceLastDonation = (Date.now() - new Date(donorProfile.lastDonationDate).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceLastDonation >= 90) {
+        // Update availability in database
+        donorProfile = await prisma.donorProfile.update({
+          where: { userId: session.user.id },
+          data: { isAvailable: true },
+          include: {
+            user: {
+              select: {
+                email: true,
+                name: true,
+                isVerified: true,
+              },
+            },
+          },
+        });
+        console.log('Auto-updated donor availability to true after 90 days');
+      }
     }
 
     console.log('Fetched donor profile with profilePicture:', donorProfile.profilePicture);
