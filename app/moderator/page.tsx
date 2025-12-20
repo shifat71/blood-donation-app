@@ -27,6 +27,7 @@ export default function ModeratorDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
+  const [bloodRequestsCount, setBloodRequestsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [reason, setReason] = useState('');
@@ -42,8 +43,21 @@ export default function ModeratorDashboard() {
   useEffect(() => {
     if (session && (session.user.role === 'MODERATOR' || session.user.role === 'ADMIN')) {
       fetchRequests();
+      fetchBloodRequestsCount();
     }
   }, [session]);
+
+  const fetchBloodRequestsCount = async () => {
+    try {
+      const response = await fetch('/api/blood-requests?status=PENDING');
+      if (response.ok) {
+        const data = await response.json();
+        setBloodRequestsCount(data.length);
+      }
+    } catch (error) {
+      console.error('[Moderator] Error fetching blood requests count:', error);
+    }
+  };
 
   const fetchRequests = async () => {
     try {
@@ -123,9 +137,14 @@ export default function ModeratorDashboard() {
             <div className="flex gap-2">
               <button
                 onClick={() => router.push('/moderator/blood-requests')}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm flex items-center gap-2"
               >
                 🩸 Blood Requests
+                {bloodRequestsCount > 0 && (
+                  <span className="bg-white text-red-600 px-2 py-0.5 rounded-full text-xs font-bold">
+                    {bloodRequestsCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => {

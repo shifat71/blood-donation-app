@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Users, Shield, UserCog } from 'lucide-react';
+import { Users, Shield, UserCog, XCircle } from 'lucide-react';
 import { Role } from '@prisma/client';
 
 type User = {
@@ -25,6 +25,12 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<Role>(Role.DONOR);
   const [activeTab, setActiveTab] = useState<'all' | 'donors' | 'requesters'>('all');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const showError = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 4000);
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -130,6 +136,16 @@ export default function AdminDashboard() {
             <p className="text-sm sm:text-base text-gray-600 mt-2">Manage users and moderators</p>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mb-4 md:mb-6 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 rounded-xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-lg">
+              <div className="bg-red-500 p-2 md:p-3 rounded-full shadow-md">
+                <XCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <p className="text-red-900 font-semibold text-sm md:text-lg">{errorMessage}</p>
+            </div>
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             <div className="card p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
@@ -211,7 +227,7 @@ export default function AdminDashboard() {
                     setSelectedUser(verifiedDonors[0]);
                     setNewRole(Role.MODERATOR);
                   } else {
-                    alert('No verified donors available to promote');
+                    showError('No verified donors available to promote');
                   }
                 }}
                 className="w-full btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5"

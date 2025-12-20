@@ -3,11 +3,15 @@
 import { useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { CheckCircle, XCircle, X } from 'lucide-react';
+
+type ToastType = 'success' | 'error' | null;
 
 export default function RequestBloodPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [formData, setFormData] = useState({
     requesterName: '',
     requesterPhone: '',
@@ -20,10 +24,22 @@ export default function RequestBloodPage() {
     additionalInfo: '',
   });
 
+  const showToast = (type: ToastType, message: string) => {
+    setToast({ type, message });
+    if (type === 'success') {
+      setTimeout(() => {
+        setToast(null);
+        router.push('/requester');
+      }, 2000);
+    } else {
+      setTimeout(() => setToast(null), 4000);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session) {
-      alert('Please sign in with Google to submit a request');
+      showToast('error', 'Please sign in with Google to submit a request');
       return;
     }
 
@@ -36,13 +52,12 @@ export default function RequestBloodPage() {
       });
 
       if (res.ok) {
-        alert('Request submitted successfully! Waiting for moderator approval.');
-        router.push('/requester');
+        showToast('success', 'Request submitted successfully! Waiting for moderator approval.');
       } else {
-        alert('Failed to submit request');
+        showToast('error', 'Failed to submit request. Please try again.');
       }
     } catch (_error) {
-      alert('Error submitting request');
+      showToast('error', 'Error submitting request. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -67,6 +82,27 @@ export default function RequestBloodPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+            toast.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-800' 
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
+            {toast.type === 'success' ? (
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-500" />
+            )}
+            <span className="font-medium">{toast.message}</span>
+            <button onClick={() => setToast(null)} className="ml-2 hover:opacity-70">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
         <h1 className="text-3xl font-bold mb-6 text-red-600">🩸 Request Blood Donation</h1>
         

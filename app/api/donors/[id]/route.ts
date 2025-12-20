@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const donor = await prisma.donorProfile.findUnique({
+    let donor = await prisma.donorProfile.findUnique({
       where: { id },
       include: {
         user: {
@@ -25,6 +25,26 @@ export async function GET(
 
     if (!donor || !donor.user.isVerified) {
       return NextResponse.json({ error: 'Donor not found' }, { status: 404 });
+    }
+
+    // Auto-update availability if 90 days have passed since last donation
+    if (donor.lastDonationDate && !donor.isAvailable) {
+      const daysSinceLastDonation = (Date.now() - new Date(donor.lastDonationDate).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceLastDonation >= 90) {
+        donor = await prisma.donorProfile.update({
+          where: { id },
+          data: { isAvailable: true },
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+                isVerified: true,
+              },
+            },
+          },
+        });
+      }
     }
 
     return NextResponse.json(donor);

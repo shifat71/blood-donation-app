@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, X } from 'lucide-react';
+
+type ToastType = 'success' | 'error' | null;
 
 type BloodRequest = {
   id: string;
@@ -28,6 +30,12 @@ export default function BloodRequestsPage() {
   const router = useRouter();
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+
+  const showToast = (type: ToastType, message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -65,12 +73,23 @@ export default function BloodRequestsPage() {
         body: JSON.stringify({ requestId, action }),
       });
 
+      const data = await res.json();
+      
       if (res.ok) {
-        alert(action === 'approve' ? 'Request approved! Emails sent to donors.' : 'Request rejected.');
+        if (action === 'approve') {
+          const emailInfo = data.emailsSent > 0 
+            ? `Request approved! ${data.emailsSent} email(s) sent to matching donors.`
+            : 'Request approved! No matching available donors found.';
+          showToast('success', emailInfo);
+        } else {
+          showToast('success', 'Request rejected.');
+        }
         fetchRequests();
+      } else {
+        showToast('error', data.error || 'Failed to process request');
       }
     } catch (_error) {
-      alert('Error processing request');
+      showToast('error', 'Error processing request');
     }
   };
 
@@ -89,6 +108,27 @@ export default function BloodRequestsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+            toast.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-800' 
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
+            {toast.type === 'success' ? (
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-500" />
+            )}
+            <span className="font-medium">{toast.message}</span>
+            <button onClick={() => setToast(null)} className="ml-2 hover:opacity-70">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4">
