@@ -39,17 +39,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
     console.error('Error creating post:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal server error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Failed to create post';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    let url: URL;
+    try {
+      url = new URL(request.url);
+    } catch {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+
+    const userId = url.searchParams.get('userId');
 
     if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Validate userId format (basic check)
+    if (userId.length < 10) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
 
     const posts = await prisma.post.findMany({
@@ -60,7 +72,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(posts);
   } catch (error) {
     console.error('Error fetching posts:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load posts' }, { status: 500 });
   }
 }
 
@@ -68,15 +80,33 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Please sign in to edit posts' }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    }
+
     const { id, caption } = body;
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Post ID is required' }, { status: 400 });
+    }
+
+    // Validate caption length
+    if (caption && caption.length > 500) {
+      return NextResponse.json({ error: 'Caption must be 500 characters or less' }, { status: 400 });
+    }
 
     const post = await prisma.post.findUnique({ where: { id } });
-    if (!post || post.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+    if (post.userId !== session.user.id) {
+      return NextResponse.json({ error: 'You can only edit your own posts' }, { status: 403 });
     }
 
     const updatedPost = await prisma.post.update({
@@ -84,10 +114,10 @@ export async function PUT(request: NextRequest) {
       data: { caption },
     });
 
-    return NextResponse.json(updatedPost);
+    return NextResponse.json({ message: 'Post updated successfully', post: updatedPost });
   } catch (error) {
     console.error('Error updating post:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
   }
 }
 
@@ -95,26 +125,35 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Please sign in to delete posts' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    let url: URL;
+    try {
+      url = new URL(request.url);
+    } catch {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+
+    const id = url.searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Post ID required' }, { status: 400 });
+      return NextResponse.json({ error: 'Post ID is required' }, { status: 400 });
     }
 
     const post = await prisma.post.findUnique({ where: { id } });
-    if (!post || post.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+    if (post.userId !== session.user.id && session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'You can only delete your own posts' }, { status: 403 });
     }
 
     await prisma.post.delete({ where: { id } });
 
-    return NextResponse.json({ message: 'Post deleted' });
+    return NextResponse.json({ message: 'Post deleted successfully' });
   } catch (error) {
     console.error('Error deleting post:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
   }
 }

@@ -8,11 +8,40 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized. Please sign in to submit a request.' }, { status: 401 });
     }
 
-    const data = await req.json();
+    let data;
+    try {
+      data = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
     const { requesterName, requesterPhone, bloodGroup, urgency, location, hospitalName, patientName, unitsNeeded, additionalInfo } = data;
+
+    // Validate required fields
+    if (!requesterName?.trim()) {
+      return NextResponse.json({ error: 'Requester name is required' }, { status: 400 });
+    }
+    if (!requesterPhone?.trim()) {
+      return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+    }
+    if (!bloodGroup) {
+      return NextResponse.json({ error: 'Blood group is required' }, { status: 400 });
+    }
+    if (!urgency) {
+      return NextResponse.json({ error: 'Urgency level is required' }, { status: 400 });
+    }
+    if (!location?.trim()) {
+      return NextResponse.json({ error: 'Location is required' }, { status: 400 });
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^[+]?[0-9]{10,15}$/;
+    if (!phoneRegex.test(requesterPhone.replace(/[\s-]/g, ''))) {
+      return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
+    }
 
     const request = await prisma.bloodRequest.create({
       data: {
@@ -33,15 +62,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, request });
   } catch (error) {
     console.error('Error creating blood request:', error);
-    return NextResponse.json({ error: 'Failed to create request' }, { status: 500 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return NextResponse.json({ error: 'A duplicate request already exists' }, { status: 409 });
+      }
+    }
+    return NextResponse.json({ error: 'Failed to create request. Please try again.' }, { status: 500 });
   }
 }
 
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const { searchParams } = new URL(req.url);
-    const status = searchParams.get('status');
+    
+    let url: URL;
+    try {
+      url = new URL(req.url);
+    } catch {
+      return NextResponse.json({ error: 'Invalid request URL' }, { status: 400 });
+    }
+    
+    const status = url.searchParams.get('status');
+
+    // Validate status if provided
+    if (status && !['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status filter. Must be PENDING, APPROVED, or REJECTED.' }, { status: 400 });
+    }
 
     const where: Prisma.BloodRequestWhereInput = {};
     if (status) {

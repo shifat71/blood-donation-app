@@ -9,8 +9,12 @@ export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== Role.ADMIN) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!session) {
+      return NextResponse.json({ error: 'Please sign in to access this resource' }, { status: 401 });
+    }
+
+    if (session.user.role !== Role.ADMIN) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const users = await prisma.user.findMany({
@@ -29,7 +33,7 @@ export async function GET(_request: NextRequest) {
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch users. Please try again.' },
       { status: 500 }
     );
   }

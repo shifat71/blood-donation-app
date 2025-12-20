@@ -9,10 +9,14 @@ export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
+    if (!session) {
+      return NextResponse.json({ error: 'Please sign in to access this resource' }, { status: 401 });
+    }
+
     console.log('[Moderator API] GET - Session:', session?.user?.email, 'Role:', session?.user?.role);
 
-    if (!session || (session.user.role !== Role.MODERATOR && session.user.role !== Role.ADMIN)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (session.user.role !== Role.MODERATOR && session.user.role !== Role.ADMIN) {
+      return NextResponse.json({ error: 'Moderator or admin access required' }, { status: 403 });
     }
 
     const verificationRequests = await prisma.verificationRequest.findMany({
@@ -47,11 +51,21 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || (session.user.role !== Role.MODERATOR && session.user.role !== Role.ADMIN)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!session) {
+      return NextResponse.json({ error: 'Please sign in to access this resource' }, { status: 401 });
     }
 
-    const body = await request.json();
+    if (session.user.role !== Role.MODERATOR && session.user.role !== Role.ADMIN) {
+      return NextResponse.json({ error: 'Moderator or admin access required' }, { status: 403 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    }
+
     const { requestId, status, reason } = body;
 
     if (!requestId || !status) {
@@ -109,7 +123,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating verification request:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to update verification request. Please try again.' },
       { status: 500 }
     );
   }
