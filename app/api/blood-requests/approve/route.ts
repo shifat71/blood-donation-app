@@ -31,10 +31,28 @@ export async function POST(req: Request) {
     });
 
     if (action === 'approve') {
+      // First, auto-update availability for donors whose 90-day period has passed
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+      await prisma.donorProfile.updateMany({
+        where: {
+          isAvailable: false,
+          lastDonationDate: {
+            lte: ninetyDaysAgo,
+          },
+        },
+        data: {
+          isAvailable: true,
+        },
+      });
+
+      // Now find all available donors with matching blood group
       const donors = await prisma.donorProfile.findMany({
         where: {
           bloodGroup: bloodRequest.bloodGroup,
           isAvailable: true,
+          user: {
+            isVerified: true,
+          },
         },
         include: {
           user: {
