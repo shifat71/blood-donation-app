@@ -413,15 +413,6 @@ export default function Dashboard() {
           {/* Hero Header - Modern Minimal Design */}
           <div className="mb-2 md:mb-6">
             <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 relative">
-              {profile && (
-                <button
-                  onClick={() => setActiveTab('edit')}
-                  className="md:hidden absolute top-2 right-2 text-gray-600 hover:text-gray-900 transition-colors bg-white rounded-full p-1.5 shadow-md hover:shadow-lg border border-gray-200 z-10"
-                  title="Edit Profile"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-              )}
               <div className="flex items-start gap-3 md:gap-4">
                 {/* Profile Picture */}
                 <div className="relative group flex-shrink-0 z-0">
@@ -460,7 +451,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Profile Info */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pr-10 md:pr-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">{session?.user.name || 'Donor'}</h1>
                     {session?.user.isVerified && (
@@ -507,6 +498,17 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+
+                {/* Edit Button - Mobile */}
+                {profile && (
+                  <button
+                    onClick={() => setActiveTab('edit')}
+                    className="md:hidden absolute top-3 right-3 text-gray-600 hover:text-gray-900 transition-colors bg-white rounded-full p-2 shadow-md hover:shadow-lg border border-gray-200 z-10"
+                    title="Edit Profile"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
 
                 {/* Stats - Desktop */}
                 {profile && (
