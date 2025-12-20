@@ -69,7 +69,7 @@ export default function BloodRequestsPage() {
         alert(action === 'approve' ? 'Request approved! Emails sent to donors.' : 'Request rejected.');
         fetchRequests();
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Error processing request');
     }
   };
