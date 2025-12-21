@@ -174,30 +174,30 @@ export function Navbar() {
                 )}
 
                 <div className="px-3 py-2 border-t border-gray-200">
-                  <p className="text-xs sm:text-sm text-gray-700 font-medium mb-2 truncate">{session.user.name}</p>
+                  <p className="text-xs text-gray-600 mb-1.5 truncate">{session.user.name}</p>
                   <button
                     onClick={() => {
                       signOut({ callbackUrl: '/' });
                       setMobileMenuOpen(false);
                     }}
-                    className="btn-secondary text-sm w-full"
+                    className="w-full px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   >
                     Sign Out
                   </button>
                 </div>
               </>
             ) : (
-              <div className="px-3 py-2 border-t border-gray-200 space-y-2">
+              <div className="px-3 py-2 border-t border-gray-200 flex gap-2">
                 <Link
                   href="/auth/signin"
-                  className="btn-secondary text-sm block text-center"
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="btn-primary text-sm block text-center"
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign Up

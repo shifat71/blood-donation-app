@@ -16,6 +16,11 @@ function escapeHtml(text: string | null | undefined): string {
     .replace(/'/g, '&#039;');
 }
 
+// Sanitize email subject to prevent header injection attacks
+function sanitizeEmailSubject(text: string): string {
+  return text.replace(/[\r\n]/g, '').trim();
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -79,8 +84,9 @@ export async function POST(req: Request) {
       console.log(`[Blood Request Approval] Found ${donors.length} matching donors for blood group ${bloodRequest.bloodGroup}`);
 
       // Helper function to process emails in batches to avoid rate limiting
-      const BATCH_SIZE = 10;
-      const BATCH_DELAY_MS = 1000; // 1 second delay between batches
+      // Configurable via environment variables for flexibility with different email providers
+      const BATCH_SIZE = Math.max(1, parseInt(process.env.EMAIL_BATCH_SIZE || '10', 10)) || 10;
+      const BATCH_DELAY_MS = Math.max(0, parseInt(process.env.EMAIL_BATCH_DELAY_MS || '1000', 10)) || 1000;
       
       const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
       
@@ -88,7 +94,7 @@ export async function POST(req: Request) {
         resend.emails.send({
           from: 'Blood Donation <onboarding@resend.dev>',
           to: donor.user.email,
-          subject: `🩸 Urgent: ${escapeHtml(bloodRequest.bloodGroup.replace('_', ' '))} Blood Needed`,
+          subject: sanitizeEmailSubject(`🩸 Urgent: ${bloodRequest.bloodGroup.replace('_', ' ')} Blood Needed`),
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 20px; text-align: center;">

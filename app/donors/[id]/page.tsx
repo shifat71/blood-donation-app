@@ -78,6 +78,19 @@ export default function DonorProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
+  // Handle Escape key to close modals
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedPost) setSelectedPost(null);
+        else if (showUpload) setShowUpload(false);
+        else if (showEditModal) setShowEditModal(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [selectedPost, showUpload, showEditModal]);
+
   useEffect(() => {
     // Redirect to dashboard if viewing own profile (only for donors)
     if (donor && session?.user?.id === donor.userId && session?.user?.role === 'DONOR') {
@@ -223,7 +236,7 @@ export default function DonorProfilePage() {
       
       <main className="flex-grow bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button onClick={() => router.push('/donors')} className="btn-secondary mb-6 flex items-center gap-2">
+          <button onClick={() => router.push('/donors')} className="btn-secondary mb-6 flex items-center gap-2 text-sm">
             <ArrowLeft className="h-4 w-4" />
             Back to Donors
           </button>
@@ -243,6 +256,19 @@ export default function DonorProfilePage() {
           )}
 
           <div className="card mb-6">
+            {/* Admin/Moderator Edit Button */}
+            {isModeratorOrAdmin && (
+              <div className="flex justify-end mb-4">
+                <button 
+                  onClick={openEditModal} 
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Profile
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col items-center text-center mb-6">
               {donor.profilePicture ? (
                 <Image 
@@ -251,6 +277,7 @@ export default function DonorProfilePage() {
                   width={128}
                   height={128}
                   className="h-32 w-32 rounded-full object-cover border-4 border-gray-200 mb-4"
+                  priority
                   unoptimized
                 />
               ) : (
@@ -417,30 +444,18 @@ export default function DonorProfilePage() {
                       <p className="text-xs text-gray-500">{posts.length} {posts.length === 1 ? 'photo' : 'photos'} shared</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {session?.user.id === donor?.userId && (
-                      <button 
-                        onClick={() => setShowUpload(true)} 
-                        className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all duration-300 flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add Photo
-                      </button>
-                    )}
-                    {isModeratorOrAdmin && (
-                      <button 
-                        onClick={openEditModal} 
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Edit
-                      </button>
-                    )}
-                  </div>
+                  {session?.user.id === donor?.userId && (
+                    <button 
+                      onClick={() => setShowUpload(true)} 
+                      className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all duration-300 flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Photo
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-            
             {/* Posts Grid */}
             <div className="p-4">
               {posts.length > 0 ? (
@@ -450,7 +465,7 @@ export default function DonorProfilePage() {
                       key={post.id}
                       onClick={() => setSelectedPost(post)}
                       className="group aspect-square relative rounded-xl overflow-hidden cursor-pointer bg-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-                      style={{ animationDelay: `${index * 50}ms` }}
+                      style={{ animationDelay: `${Math.min(index * 50, 500)}ms` }}
                     >
                       <Image 
                         src={post.imageUrl} 
@@ -773,7 +788,7 @@ export default function DonorProfilePage() {
                       alt={donor.user.name}
                       width={52}
                       height={52}
-                      className="w-13 h-13 rounded-full object-cover ring-2 ring-red-100"
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-red-100"
                       unoptimized
                     />
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -782,7 +797,7 @@ export default function DonorProfilePage() {
                   </div>
                 ) : (
                   <div className="relative">
-                    <div className="w-13 h-13 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
                       <span className="text-xl font-bold text-white">
                         {donor?.user.name.charAt(0).toUpperCase()}
                       </span>

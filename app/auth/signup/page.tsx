@@ -402,7 +402,7 @@ export default function SignUp() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-primary w-full text-lg"
+                  className="btn-primary w-full text-sm sm:text-base"
                 >
                   {loading ? 'Creating account...' : 'Sign up'}
                 </button>
