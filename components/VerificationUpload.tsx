@@ -180,7 +180,7 @@ export default function VerificationUpload({ onSuccess }: VerificationUploadProp
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full"
+          className="btn-primary w-full text-sm sm:text-base"
         >
           {loading ? 'Submitting...' : 'Submit Verification Request'}
         </button>

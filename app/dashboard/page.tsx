@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import VerificationUpload from '@/components/VerificationUpload';
-import { User, Droplet, CheckCircle, XCircle, Clock, Camera, Phone, MapPin, Calendar, Mail, History, Plus, Grid3x3, X, Edit2, Activity, Heart, Building2 } from 'lucide-react';
+import { User, Droplet, CheckCircle, XCircle, Clock, Camera, Phone, MapPin, Calendar, Mail, History, Plus, Grid3x3, X, Edit2, Activity, Heart, Building2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Post = {
@@ -59,6 +59,7 @@ export default function Dashboard() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editCaption, setEditCaption] = useState('');
+  const [showActionSheet, setShowActionSheet] = useState(false);
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -102,7 +103,8 @@ export default function Dashboard() {
   useEffect(() => {
     const handleEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (selectedPost) setSelectedPost(null);
+        if (showActionSheet) setShowActionSheet(false);
+        else if (selectedPost) setSelectedPost(null);
         else if (showUpload) { setShowUpload(false); setImageFile(null); setCaption(''); }
         else if (editingPost) { setEditingPost(null); setEditCaption(''); }
         else if (showSuccessModal) setShowSuccessModal(false);
@@ -110,7 +112,7 @@ export default function Dashboard() {
     };
     document.addEventListener('keydown', handleEscapeKey);
     return () => document.removeEventListener('keydown', handleEscapeKey);
-  }, [selectedPost, showUpload, editingPost, showSuccessModal]);
+  }, [selectedPost, showUpload, editingPost, showSuccessModal, showActionSheet]);
 
   const fetchProfile = async () => {
     try {
@@ -1248,38 +1250,28 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Modern Edit Post Modal */}
+      {/* Edit Post Modal */}
       {editingPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setEditingPost(null); setEditCaption(''); }} />
           
           {/* Modal Content */}
-          <div className="relative bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95">
-            {/* Header with gradient */}
-            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 p-[2px]">
-              <div className="bg-white px-6 py-4 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl">
-                    <Edit2 className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Edit Caption</h3>
-                    <p className="text-xs text-gray-500">Update your post</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => { setEditingPost(null); setEditCaption(''); }}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </button>
-              </div>
+          <div className="relative bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-xl animate-in zoom-in-95">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Caption</h3>
+              <button 
+                onClick={() => { setEditingPost(null); setEditCaption(''); }}
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-400" />
+              </button>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-5">
               {/* Image Preview */}
-              <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 shadow-inner">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-100 mb-4">
                 <Image 
                   src={editingPost.imageUrl} 
                   alt="Post" 
@@ -1290,32 +1282,31 @@ export default function Dashboard() {
               </div>
 
               {/* Caption Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Caption</label>
+              <div className="mb-4">
                 <textarea
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-sm"
-                  placeholder="Update your caption..."
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-none text-sm"
+                  placeholder="Write a caption..."
                   value={editCaption}
                   onChange={(e) => setEditCaption(e.target.value)}
                   maxLength={2200}
-                  rows={4}
+                  rows={3}
                 />
-                <p className="text-xs text-gray-400 mt-1 text-right">{editCaption.length}/2200</p>
+                <p className="text-xs text-gray-400 mt-1.5 text-right">{editCaption.length}/2200</p>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3">
                 <button 
                   onClick={() => { setEditingPost(null); setEditCaption(''); }}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-2.5 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors text-sm"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleEditPost}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-blue-200 transition-all"
+                  className="flex-1 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors text-sm"
                 >
-                  Save Changes
+                  Save
                 </button>
               </div>
             </div>
@@ -1444,148 +1435,169 @@ export default function Dashboard() {
 
       <Footer />
 
-      {/* Modern Post Viewer Modal */}
+      {/* Instagram-style Post Viewer Modal */}
       {selectedPost && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center" 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black" 
           onClick={() => setSelectedPost(null)}
         >
-          {/* Backdrop with blur */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" />
-          
           {/* Close button */}
           <button
             onClick={() => setSelectedPost(null)}
-            className="absolute top-4 right-4 md:top-6 md:right-6 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all duration-300 group"
+            className="absolute top-3 right-3 md:top-5 md:right-5 z-20 p-2 hover:opacity-60 transition-opacity"
           >
-            <X className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
+            <X className="h-6 w-6 md:h-7 md:w-7 text-white" />
           </button>
           
           {/* Content Container */}
           <div 
-            className="relative z-10 w-full max-w-6xl mx-4 max-h-[90vh] flex flex-col lg:flex-row gap-0 overflow-hidden animate-in zoom-in-95 fade-in duration-300"
+            className="relative z-10 w-full h-full md:h-auto md:max-h-[calc(100vh-40px)] max-w-[935px] mx-auto flex flex-col md:flex-row bg-black md:bg-white overflow-hidden animate-in fade-in duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Image Section */}
-            <div className="flex-1 relative bg-black/40 backdrop-blur-sm rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none flex items-center justify-center min-h-[300px] lg:min-h-[500px]">
-              <div className="relative w-full h-full flex items-center justify-center p-4">
-                <Image
-                  src={selectedPost.imageUrl}
-                  alt={selectedPost.caption || 'Post'}
-                  width={900}
-                  height={900}
-                  className="max-h-[50vh] lg:max-h-[80vh] w-auto object-contain rounded-lg shadow-2xl"
-                  unoptimized
-                />
-              </div>
-              
-              {/* Image gradient overlay at bottom for mobile */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent lg:hidden" />
+            <div className="relative bg-black flex items-center justify-center flex-1 md:max-w-[600px] min-h-0">
+              <Image
+                src={selectedPost.imageUrl}
+                alt={selectedPost.caption || 'Post'}
+                width={600}
+                height={750}
+                className="w-full h-full object-contain"
+                unoptimized
+                priority
+              />
             </div>
             
             {/* Details Panel */}
-            <div className="lg:w-96 bg-white rounded-b-2xl lg:rounded-r-2xl lg:rounded-bl-none flex flex-col max-h-[40vh] lg:max-h-none overflow-hidden">
+            <div className="w-full md:w-[335px] md:min-w-[335px] bg-white flex flex-col border-l border-gray-100">
               {/* User Header */}
-              <div className="p-5 border-b border-gray-100 flex items-center gap-4">
-                {profile?.profilePicture ? (
+              <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <div className="relative">
-                    <Image
-                      src={profile.profilePicture}
-                      alt={session?.user.name || 'User'}
-                      width={52}
-                      height={52}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-red-100"
-                      unoptimized
-                    />
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                      <Droplet className="h-3 w-3 text-white" />
-                    </div>
+                    {profile?.profilePicture ? (
+                      <Image
+                        src={profile.profilePicture}
+                        alt={session?.user.name || 'User'}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover ring-[1.5px] ring-gray-200"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-full p-[1.5px]">
+                        <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                          <span className="text-xs font-semibold text-gray-900">
+                            {session?.user.name?.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-xl font-bold text-white">
-                        {session?.user.name?.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
-                      <Droplet className="h-3 w-3 text-red-500" />
-                    </div>
-                  </div>
-                )}
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">{session?.user.name}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-                      {profile?.bloodGroup.replace('_', ' ')}
-                    </span>
-                    <span className="text-xs text-gray-400">•</span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(selectedPost.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })}
-                    </span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-sm text-gray-900 leading-tight">{session?.user.name}</span>
+                    {profile?.currentDistrict && (
+                      <span className="text-xs text-gray-500">{profile.currentDistrict}</span>
+                    )}
                   </div>
                 </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowActionSheet(true);
+                  }}
+                  className="p-2 -mr-2 hover:opacity-50 transition-opacity"
+                >
+                  <MoreHorizontal className="h-5 w-5 text-gray-900" />
+                </button>
               </div>
               
               {/* Caption Section */}
-              <div className="flex-1 overflow-y-auto p-5">
+              <div className="flex-1 overflow-y-auto">
                 {selectedPost.caption ? (
-                  <div className="space-y-4">
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                  <div className="px-4 py-3">
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
                       {selectedPost.caption}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-3">
+                      {(() => {
+                        const diff = Date.now() - new Date(selectedPost.createdAt).getTime();
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const weeks = Math.floor(days / 7);
+                        if (days === 0) return 'Today';
+                        if (days === 1) return '1d';
+                        if (days < 7) return `${days}d`;
+                        return `${weeks}w`;
+                      })()}
                     </p>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                    <p>No caption</p>
+                  <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+                    No caption
                   </div>
                 )}
               </div>
               
-              {/* Footer Actions */}
-              <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>
-                      {new Date(selectedPost.createdAt).toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPost(null);
-                        setEditingPost(selectedPost);
-                        setEditCaption(selectedPost.caption || '');
-                      }}
-                      className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium text-xs py-2 px-3 rounded-lg transition-all"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPost(null);
-                        handleDeletePost(selectedPost.id);
-                      }}
-                      className="flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 font-medium text-xs py-2 px-3 rounded-lg transition-all"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
+              {/* Footer */}
+              <div className="px-4 py-3 border-t border-gray-100">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+                  {new Date(selectedPost.createdAt).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Instagram-style Action Sheet */}
+      {showActionSheet && selectedPost && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" 
+            onClick={() => setShowActionSheet(false)} 
+          />
+          
+          {/* Action Sheet */}
+          <div className="relative w-full max-w-md mx-4 mb-4 animate-slide-up">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
+              {/* Delete Option */}
+              <button
+                onClick={() => {
+                  setShowActionSheet(false);
+                  setSelectedPost(null);
+                  handleDeletePost(selectedPost.id);
+                }}
+                className="w-full px-4 py-4 flex items-center justify-center gap-2 text-red-500 font-semibold text-[15px] hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-100"
+              >
+                <Trash2 className="h-5 w-5" />
+                Delete
+              </button>
+              
+              {/* Edit Option */}
+              <button
+                onClick={() => {
+                  setShowActionSheet(false);
+                  setSelectedPost(null);
+                  setEditingPost(selectedPost);
+                  setEditCaption(selectedPost.caption || '');
+                }}
+                className="w-full px-4 py-4 flex items-center justify-center gap-2 text-gray-900 font-medium text-[15px] hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              >
+                <Edit2 className="h-5 w-5" />
+                Edit
+              </button>
+            </div>
+            
+            {/* Cancel Button */}
+            <button
+              onClick={() => setShowActionSheet(false)}
+              className="w-full mt-2 px-4 py-4 bg-white rounded-2xl text-gray-900 font-semibold text-[15px] hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-xl"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

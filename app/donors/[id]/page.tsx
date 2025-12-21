@@ -236,7 +236,7 @@ export default function DonorProfilePage() {
       
       <main className="flex-grow bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button onClick={() => router.push('/donors')} className="btn-secondary mb-6 flex items-center gap-2">
+          <button onClick={() => router.push('/donors')} className="btn-secondary mb-6 flex items-center gap-2 text-sm">
             <ArrowLeft className="h-4 w-4" />
             Back to Donors
           </button>
@@ -256,6 +256,19 @@ export default function DonorProfilePage() {
           )}
 
           <div className="card mb-6">
+            {/* Admin/Moderator Edit Button */}
+            {isModeratorOrAdmin && (
+              <div className="flex justify-end mb-4">
+                <button 
+                  onClick={openEditModal} 
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Profile
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col items-center text-center mb-6">
               {donor.profilePicture ? (
                 <Image 
@@ -430,30 +443,18 @@ export default function DonorProfilePage() {
                       <p className="text-xs text-gray-500">{posts.length} {posts.length === 1 ? 'photo' : 'photos'} shared</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {session?.user.id === donor?.userId && (
-                      <button 
-                        onClick={() => setShowUpload(true)} 
-                        className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all duration-300 flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add Photo
-                      </button>
-                    )}
-                    {isModeratorOrAdmin && (
-                      <button 
-                        onClick={openEditModal} 
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Edit
-                      </button>
-                    )}
-                  </div>
+                  {session?.user.id === donor?.userId && (
+                    <button 
+                      onClick={() => setShowUpload(true)} 
+                      className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all duration-300 flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Photo
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-            
             {/* Posts Grid */}
             <div className="p-4">
               {posts.length > 0 ? (
