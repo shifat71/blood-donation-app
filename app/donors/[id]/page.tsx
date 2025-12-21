@@ -402,83 +402,192 @@ export default function DonorProfilePage() {
             )}
           </div>
 
-          <div className="card mt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Grid3x3 className="h-5 w-5 text-gray-700" />
-                <h2 className="text-lg font-semibold text-gray-900">Posts</h2>
-              </div>
-              <div className="flex gap-2">
-                {session?.user.id === donor?.userId && (
-                  <button onClick={() => setShowUpload(true)} className="btn-primary text-sm flex items-center gap-1">
-                    <Plus className="h-4 w-4" />
-                    Add Photo
-                  </button>
-                )}
-                {isModeratorOrAdmin && (
-                  <button onClick={openEditModal} className="btn-secondary text-sm flex items-center gap-1">
-                    <Edit className="h-4 w-4" />
-                    Edit Profile
-                  </button>
-                )}
+          {/* Modern Posts Section */}
+          <div className="mt-6 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            {/* Header with gradient accent */}
+            <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 p-[2px]">
+              <div className="bg-white px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl shadow-md">
+                      <Grid3x3 className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">Posts</h2>
+                      <p className="text-xs text-gray-500">{posts.length} {posts.length === 1 ? 'photo' : 'photos'} shared</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {session?.user.id === donor?.userId && (
+                      <button 
+                        onClick={() => setShowUpload(true)} 
+                        className="group relative px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all duration-300 flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Photo
+                      </button>
+                    )}
+                    {isModeratorOrAdmin && (
+                      <button 
+                        onClick={openEditModal} 
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             
-            {posts.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {posts.map((post) => (
-                  <button
-                    key={post.id}
-                    onClick={() => setSelectedPost(post)}
-                    className="aspect-square relative rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
-                  >
-                    <Image src={post.imageUrl} alt={post.caption || 'Post'} fill className="object-cover" unoptimized />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Grid3x3 className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">No posts yet</p>
-              </div>
-            )}
+            {/* Posts Grid */}
+            <div className="p-4">
+              {posts.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {posts.map((post, index) => (
+                    <button
+                      key={post.id}
+                      onClick={() => setSelectedPost(post)}
+                      className="group aspect-square relative rounded-xl overflow-hidden cursor-pointer bg-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <Image 
+                        src={post.imageUrl} 
+                        alt={post.caption || 'Post'} 
+                        fill 
+                        className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                        unoptimized 
+                      />
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
+                        {post.caption && (
+                          <p className="text-white text-xs line-clamp-2 font-medium">{post.caption}</p>
+                        )}
+                        <p className="text-white/70 text-[10px] mt-1">
+                          {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      {/* Corner accent */}
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 px-4">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
+                    <Grid3x3 className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium">No posts yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Photos will appear here once shared</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
 
+      {/* Modern Upload Photo Modal */}
       {showUpload && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Upload Photo</h3>
-              <button onClick={() => setShowUpload(false)}>
-                <X className="h-6 w-6" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowUpload(false)} />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95">
+            {/* Header with gradient */}
+            <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 p-[2px]">
+              <div className="bg-white px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Upload Photo</h3>
+                    <p className="text-xs text-gray-500">Share a moment</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowUpload(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              className="input-field mb-4"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onload = () => setImageFile(reader.result as string);
-                }
-              }}
-            />
-            {imageFile && <div className="relative w-full h-48 mb-4"><Image src={imageFile} alt="Preview" fill className="object-cover rounded" unoptimized /></div>}
-            <textarea
-              className="input-field mb-4"
-              placeholder="Caption (optional)"
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              rows={3}
-            />
-            <button onClick={handleUploadPost} disabled={!imageFile} className="btn-primary w-full">
-              Upload
-            </button>
+            
+            <div className="p-6 space-y-4">
+              {/* File Upload Area */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="photo-upload"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onload = () => setImageFile(reader.result as string);
+                    }
+                  }}
+                />
+                {!imageFile ? (
+                  <label 
+                    htmlFor="photo-upload"
+                    className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50/30 transition-all duration-300"
+                  >
+                    <div className="p-3 bg-gray-100 rounded-full mb-3">
+                      <Plus className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-600">Click to upload photo</p>
+                    <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+                  </label>
+                ) : (
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden group">
+                    <Image src={imageFile} alt="Preview" fill className="object-cover" unoptimized />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <label 
+                        htmlFor="photo-upload"
+                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-100 transition-colors"
+                      >
+                        Change Photo
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Caption */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Caption</label>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm"
+                  placeholder="Write a caption... (optional)"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => setShowUpload(false)}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleUploadPost} 
+                  disabled={!imageFile} 
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                >
+                  Upload
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -614,53 +723,129 @@ export default function DonorProfilePage() {
         </div>
       )}
 
-      {/* Post Viewer Modal */}
+      {/* Modern Post Viewer Modal */}
       {selectedPost && (
-        <div className="fixed inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={() => setSelectedPost(null)}>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center" 
+          onClick={() => setSelectedPost(null)}
+        >
+          {/* Backdrop with blur */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" />
+          
+          {/* Close button */}
           <button
             onClick={() => setSelectedPost(null)}
-            className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition-colors z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg"
+            className="absolute top-4 right-4 md:top-6 md:right-6 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all duration-300 group"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
           </button>
-          <div className="max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row gap-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex-1 relative rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center shadow-2xl">
-              <Image
-                src={selectedPost.imageUrl}
-                alt={selectedPost.caption || 'Post'}
-                width={800}
-                height={800}
-                className="max-h-[70vh] md:max-h-[85vh] w-auto object-contain"
-                unoptimized
-              />
+          
+          {/* Content Container */}
+          <div 
+            className="relative z-10 w-full max-w-6xl mx-4 max-h-[90vh] flex flex-col lg:flex-row gap-0 lg:gap-0 overflow-hidden animate-in zoom-in-95 fade-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image Section */}
+            <div className="flex-1 relative bg-black/40 backdrop-blur-sm rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none flex items-center justify-center min-h-[300px] lg:min-h-[500px]">
+              <div className="relative w-full h-full flex items-center justify-center p-4">
+                <Image
+                  src={selectedPost.imageUrl}
+                  alt={selectedPost.caption || 'Post'}
+                  width={900}
+                  height={900}
+                  className="max-h-[50vh] lg:max-h-[80vh] w-auto object-contain rounded-lg shadow-2xl"
+                  unoptimized
+                />
+              </div>
+              
+              {/* Image gradient overlay at bottom for mobile */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent lg:hidden" />
             </div>
-            {selectedPost.caption && (
-              <div className="md:w-80 bg-white rounded-xl p-6 flex flex-col shadow-xl">
-                <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                  {donor?.profilePicture ? (
+            
+            {/* Details Panel */}
+            <div className="lg:w-96 bg-white rounded-b-2xl lg:rounded-r-2xl lg:rounded-bl-none flex flex-col max-h-[40vh] lg:max-h-none overflow-hidden">
+              {/* User Header */}
+              <div className="p-5 border-b border-gray-100 flex items-center gap-4">
+                {donor?.profilePicture ? (
+                  <div className="relative">
                     <Image
                       src={donor.profilePicture}
                       alt={donor.user.name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-full object-cover"
+                      width={52}
+                      height={52}
+                      className="w-13 h-13 rounded-full object-cover ring-2 ring-red-100"
                       unoptimized
                     />
-                  ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                      <User className="h-6 w-6 text-white" />
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <Droplet className="h-3 w-3 text-white" />
                     </div>
-                  )}
-                  <div>
-                    <p className="font-semibold text-gray-900">{donor?.user.name}</p>
-                    <p className="text-xs text-gray-500">{new Date(selectedPost.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="w-13 h-13 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-xl font-bold text-white">
+                        {donor?.user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
+                      <Droplet className="h-3 w-3 text-red-500" />
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">{donor?.user.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                      {donor?.bloodGroup.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(selectedPost.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </span>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-gray-700 text-sm leading-relaxed">{selectedPost.caption}</p>
+              </div>
+              
+              {/* Caption Section */}
+              <div className="flex-1 overflow-y-auto p-5">
+                {selectedPost.caption ? (
+                  <div className="space-y-4">
+                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {selectedPost.caption}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                    <p>No caption</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Footer Actions */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>
+                      {new Date(selectedPost.createdAt).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedPost(null)}
+                    className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

@@ -230,11 +230,11 @@ export default function SignUp() {
                 </div>
 
                 {/* Verification Type Toggle */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                     Verification Method
                   </label>
-                  <div className="flex items-center space-x-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <button
                       type="button"
                       onClick={() => {
@@ -242,17 +242,17 @@ export default function SignUp() {
                         setIdCardFile(null);
                         setError('');
                       }}
-                      className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                      className={`py-2.5 sm:py-3 px-2 sm:px-4 rounded-lg border-2 transition-all ${
                         verificationType === 'auto'
                           ? 'border-red-600 bg-red-50 text-red-700 font-semibold'
                           : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                       }`}
                     >
                       <div className="flex items-center justify-center">
-                        <CheckCircle className={`h-5 w-5 mr-2 ${verificationType === 'auto' ? 'text-red-600' : 'text-gray-400'}`} />
-                        <span>Auto Verify</span>
+                        <CheckCircle className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0 ${verificationType === 'auto' ? 'text-red-600' : 'text-gray-400'}`} />
+                        <span className="text-xs sm:text-sm truncate">Auto Verify</span>
                       </div>
-                      <p className="text-xs mt-1 opacity-75">University email</p>
+                      <p className="text-[10px] sm:text-xs mt-1 opacity-75 truncate">University email</p>
                     </button>
                     
                     <button
@@ -261,17 +261,17 @@ export default function SignUp() {
                         setVerificationType('manual');
                         setError('');
                       }}
-                      className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                      className={`py-2.5 sm:py-3 px-2 sm:px-4 rounded-lg border-2 transition-all ${
                         verificationType === 'manual'
                           ? 'border-red-600 bg-red-50 text-red-700 font-semibold'
                           : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                       }`}
                     >
                       <div className="flex items-center justify-center">
-                        <Upload className={`h-5 w-5 mr-2 ${verificationType === 'manual' ? 'text-red-600' : 'text-gray-400'}`} />
-                        <span>Manual Verify</span>
+                        <Upload className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0 ${verificationType === 'manual' ? 'text-red-600' : 'text-gray-400'}`} />
+                        <span className="text-xs sm:text-sm truncate">Manual Verify</span>
                       </div>
-                      <p className="text-xs mt-1 opacity-75">Upload ID card</p>
+                      <p className="text-[10px] sm:text-xs mt-1 opacity-75 truncate">Upload ID card</p>
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">

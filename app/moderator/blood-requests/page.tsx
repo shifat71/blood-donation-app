@@ -111,48 +111,48 @@ export default function BloodRequestsPage() {
       
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+        <div className="fixed top-16 sm:top-20 right-2 sm:right-4 z-50 animate-in slide-in-from-top-2 duration-300 max-w-[calc(100vw-1rem)] sm:max-w-md">
+          <div className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg shadow-lg ${
             toast.type === 'success' 
               ? 'bg-green-50 border border-green-200 text-green-800' 
               : 'bg-red-50 border border-red-200 text-red-800'
           }`}>
             {toast.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-green-500" />
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
             ) : (
-              <XCircle className="w-5 h-5 text-red-500" />
+              <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0" />
             )}
-            <span className="font-medium">{toast.message}</span>
-            <button onClick={() => setToast(null)} className="ml-2 hover:opacity-70">
+            <span className="font-medium text-sm sm:text-base">{toast.message}</span>
+            <button onClick={() => setToast(null)} className="ml-1 sm:ml-2 hover:opacity-70 flex-shrink-0">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
       
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">Blood Donation Requests</h1>
+      <main className="flex-grow bg-gray-50 py-6 sm:py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8">Blood Donation Requests</h1>
 
           {requests.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-12 text-center">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No pending requests</h3>
+            <div className="bg-white rounded-lg shadow p-6 sm:p-8 md:p-12 text-center">
+              <CheckCircle className="h-12 sm:h-16 w-12 sm:w-16 text-green-500 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">No pending requests</h3>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {requests.map((req) => (
-                <div key={req.id} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={req.id} className="bg-white rounded-lg shadow p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 mb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-red-600">
+                      <h3 className="text-lg sm:text-xl font-bold text-red-600">
                         {req.bloodGroup.replace('_', ' ')} Blood Needed
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-500">
                         {new Date(req.createdAt).toLocaleString()}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                       req.urgency === 'URGENT' ? 'bg-red-100 text-red-800' :
                       req.urgency === 'MODERATE' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-green-100 text-green-800'
@@ -161,61 +161,61 @@ export default function BloodRequestsPage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 text-xs sm:text-sm">
                     <div>
-                      <p className="text-sm text-gray-600">Requester</p>
-                      <p className="font-medium">{req.requesterName}</p>
+                      <p className="text-gray-600">Requester</p>
+                      <p className="font-medium truncate">{req.requesterName}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Phone</p>
+                      <p className="text-gray-600">Phone</p>
                       <p className="font-medium">{req.requesterPhone}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Email</p>
-                      <p className="font-medium">{req.requesterEmail}</p>
+                      <p className="text-gray-600">Email</p>
+                      <p className="font-medium truncate">{req.requesterEmail}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Location</p>
-                      <p className="font-medium">{req.location}</p>
+                      <p className="text-gray-600">Location</p>
+                      <p className="font-medium truncate">{req.location}</p>
                     </div>
                     {req.hospitalName && (
                       <div>
-                        <p className="text-sm text-gray-600">Hospital</p>
-                        <p className="font-medium">{req.hospitalName}</p>
+                        <p className="text-gray-600">Hospital</p>
+                        <p className="font-medium truncate">{req.hospitalName}</p>
                       </div>
                     )}
                     {req.patientName && (
                       <div>
-                        <p className="text-sm text-gray-600">Patient</p>
-                        <p className="font-medium">{req.patientName}</p>
+                        <p className="text-gray-600">Patient</p>
+                        <p className="font-medium truncate">{req.patientName}</p>
                       </div>
                     )}
                     <div>
-                      <p className="text-sm text-gray-600">Units Needed</p>
+                      <p className="text-gray-600">Units Needed</p>
                       <p className="font-medium">{req.unitsNeeded}</p>
                     </div>
                   </div>
 
                   {req.additionalInfo && (
                     <div className="mb-4">
-                      <p className="text-sm text-gray-600">Additional Info</p>
-                      <p className="text-gray-800">{req.additionalInfo}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Additional Info</p>
+                      <p className="text-xs sm:text-sm text-gray-800">{req.additionalInfo}</p>
                     </div>
                   )}
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                       onClick={() => handleAction(req.id, 'approve')}
-                      className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                      className="flex-1 bg-green-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 text-xs sm:text-sm font-medium"
                     >
-                      <CheckCircle className="h-5 w-5" />
+                      <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       Approve & Notify Donors
                     </button>
                     <button
                       onClick={() => handleAction(req.id, 'reject')}
-                      className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
+                      className="flex-1 bg-red-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-xs sm:text-sm font-medium"
                     >
-                      <XCircle className="h-5 w-5" />
+                      <XCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       Reject
                     </button>
                   </div>

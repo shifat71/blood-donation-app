@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { resend } from '@/lib/resend';
+import { Role } from '@prisma/client';
 
 // HTML escape function to prevent XSS in email templates
 function escapeHtml(text: string | null | undefined): string {
@@ -18,7 +19,7 @@ function escapeHtml(text: string | null | undefined): string {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (session?.user?.role !== 'MODERATOR' && session?.user?.role !== 'ADMIN') {
+    if (session?.user?.role !== Role.MODERATOR && session?.user?.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -77,12 +78,17 @@ export async function POST(req: Request) {
 
       console.log(`[Blood Request Approval] Found ${donors.length} matching donors for blood group ${bloodRequest.bloodGroup}`);
 
-      // Send emails concurrently using Promise.allSettled for better performance
-      const emailPromises = donors.map((donor) => 
+      // Helper function to process emails in batches to avoid rate limiting
+      const BATCH_SIZE = 10;
+      const BATCH_DELAY_MS = 1000; // 1 second delay between batches
+      
+      const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      
+      const createEmailPromise = (donor: typeof donors[0]) => 
         resend.emails.send({
           from: 'Blood Donation <onboarding@resend.dev>',
           to: donor.user.email,
-          subject: `🩸 Urgent: ${bloodRequest.bloodGroup.replace('_', ' ')} Blood Needed`,
+          subject: `🩸 Urgent: ${escapeHtml(bloodRequest.bloodGroup.replace('_', ' '))} Blood Needed`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 20px; text-align: center;">
@@ -99,7 +105,7 @@ export async function POST(req: Request) {
                     <li>👤 <strong>Patient:</strong> ${escapeHtml(bloodRequest.patientName) || 'N/A'}</li>
                     <li>🏥 <strong>Hospital:</strong> ${escapeHtml(bloodRequest.hospitalName) || 'N/A'}</li>
                     <li>📌 <strong>Location:</strong> ${escapeHtml(bloodRequest.location)}</li>
-                    <li>💉 <strong>Units Needed:</strong> ${bloodRequest.unitsNeeded}</li>
+                    <li>💉 <strong>Units Needed:</strong> ${escapeHtml(String(bloodRequest.unitsNeeded))}</li>
                     <li>⚡ <strong>Urgency:</strong> ${escapeHtml(bloodRequest.urgency)}</li>
                   </ul>
                 </div>
@@ -122,10 +128,23 @@ export async function POST(req: Request) {
               </div>
             </div>
           `,
-        }).then(result => ({ email: donor.user.email, result }))
-      );
+        }).then(result => ({ email: donor.user.email, result }));
 
-      const results = await Promise.allSettled(emailPromises);
+      // Process emails in batches to avoid rate limiting
+      const allResults: PromiseSettledResult<{ email: string; result: unknown }>[] = [];
+      for (let i = 0; i < donors.length; i += BATCH_SIZE) {
+        const batch = donors.slice(i, i + BATCH_SIZE);
+        const batchPromises = batch.map(createEmailPromise);
+        const batchResults = await Promise.allSettled(batchPromises);
+        allResults.push(...batchResults);
+        
+        // Add delay between batches (except after the last batch)
+        if (i + BATCH_SIZE < donors.length) {
+          await sleep(BATCH_DELAY_MS);
+        }
+      }
+
+      const results = allResults;
       
       // Process results to count successes and collect errors
       results.forEach((result, index) => {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { RequestStatus, Prisma } from '@prisma/client';
+import { RequestStatus, Prisma, Role } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
@@ -37,9 +37,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Location is required' }, { status: 400 });
     }
 
-    // Validate phone number format
+    // Validate phone number format and clean it
+    const cleanedPhone = requesterPhone.replace(/[\s-]/g, '');
     const phoneRegex = /^[+]?[0-9]{10,15}$/;
-    if (!phoneRegex.test(requesterPhone.replace(/[\s-]/g, ''))) {
+    if (!phoneRegex.test(cleanedPhone)) {
       return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
     }
 
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
       data: {
         requesterName,
         requesterEmail: session.user.email,
-        requesterPhone,
+        requesterPhone: cleanedPhone,
         bloodGroup,
         urgency,
         location,
@@ -79,7 +80,7 @@ export async function GET(req: Request) {
     try {
       url = new URL(req.url);
     } catch {
-      return NextResponse.json({ error: 'Invalid request URL' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
     
     const status = url.searchParams.get('status');
@@ -94,7 +95,7 @@ export async function GET(req: Request) {
       where.status = status as RequestStatus;
     }
 
-    if (session?.user?.role !== 'MODERATOR' && session?.user?.role !== 'ADMIN') {
+    if (session?.user?.role !== Role.MODERATOR && session?.user?.role !== Role.ADMIN) {
       where.requesterEmail = session?.user?.email;
     }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { Role } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,8 +60,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    // Validate userId format (basic check)
-    if (userId.length < 10) {
+    // Validate userId format (UUID/CUID format check)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const cuidRegex = /^c[a-z0-9]{24}$/i;
+    if (!uuidRegex.test(userId) && !cuidRegex.test(userId)) {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
 
@@ -145,7 +148,7 @@ export async function DELETE(request: NextRequest) {
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
-    if (post.userId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (post.userId !== session.user.id && session.user.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'You can only delete your own posts' }, { status: 403 });
     }
 
