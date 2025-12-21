@@ -277,6 +277,7 @@ export default function DonorProfilePage() {
                   width={128}
                   height={128}
                   className="h-32 w-32 rounded-full object-cover border-4 border-gray-200 mb-4"
+                  priority
                   unoptimized
                 />
               ) : (
