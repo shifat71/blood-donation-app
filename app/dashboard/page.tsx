@@ -414,8 +414,8 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-50">
       <Navbar />
       
-      <main className="flex-grow py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow py-4 md:py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           {/* Hero Header - Modern Minimal Design */}
           <div className="mb-2 md:mb-6">
             <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 relative">
@@ -458,47 +458,47 @@ export default function Dashboard() {
 
                 {/* Profile Info */}
                 <div className="flex-1 min-w-0 pr-10 md:pr-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">{session?.user.name || 'Donor'}</h1>
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 truncate">{session?.user.name || 'Donor'}</h1>
                     {session?.user.isVerified && (
-                      <svg className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="12" r="11" fill="#25D366"/>
                         <path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                       </svg>
                     )}
                   </div>
-                  <p className="text-xs md:text-sm text-gray-500 truncate mb-2 md:mb-3">{session?.user.email}</p>
+                  <p className="text-[11px] sm:text-xs md:text-sm text-gray-500 truncate mb-1.5 md:mb-3">{session?.user.email}</p>
                   
                   {profile && (
-                    <div className="flex flex-wrap gap-1.5 md:gap-2 relative z-0">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 bg-red-50 text-red-700 rounded-md text-xs md:text-sm font-medium border border-red-200">
-                        <Droplet className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    <div className="flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 relative z-0">
+                      <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 md:px-2.5 md:py-1 bg-red-50 text-red-700 rounded text-[10px] sm:text-xs md:text-sm font-medium border border-red-200">
+                        <Droplet className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" />
                         {profile.bloodGroup.replace('_', ' ')}
                       </span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-xs md:text-sm font-medium border ${
+                      <span className={`inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 md:px-2.5 md:py-1 rounded text-[10px] sm:text-xs md:text-sm font-medium border ${
                         profile.isAvailable 
                           ? 'bg-green-50 text-green-700 border-green-200' 
                           : 'bg-gray-50 text-gray-600 border-gray-200'
                       }`}>
                         {profile.isAvailable ? (
-                          <><CheckCircle className="w-3 h-3 md:w-3.5 md:h-3.5" /> Available</>
+                          <><CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" /> Available</>
                         ) : (
-                          <><XCircle className="w-3 h-3 md:w-3.5 md:h-3.5" /> Unavailable</>
+                          <><XCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" /> Unavailable</>
                         )}
                       </span>
                       {profile.currentDistrict && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 bg-blue-50 text-blue-700 rounded-md text-xs md:text-sm font-medium border border-blue-200">
-                          <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 md:px-2.5 md:py-1 bg-blue-50 text-blue-700 rounded text-[10px] sm:text-xs md:text-sm font-medium border border-blue-200">
+                          <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" />
                           {profile.currentDistrict}
                         </span>
                       )}
 
-                      <span className="inline-flex md:hidden items-center gap-1 px-2 py-0.5 bg-gray-50 text-gray-700 rounded-md text-xs font-medium border border-gray-200">
-                        <Heart className="w-3 h-3" />
+                      <span className="inline-flex md:hidden items-center gap-0.5 px-1.5 py-0.5 bg-gray-50 text-gray-700 rounded text-[10px] font-medium border border-gray-200">
+                        <Heart className="w-2.5 h-2.5" />
                         {posts.length}
                       </span>
-                      <span className="inline-flex md:hidden items-center gap-1 px-2 py-0.5 bg-gray-50 text-gray-700 rounded-md text-xs font-medium border border-gray-200">
-                        <Activity className="w-3 h-3" />
+                      <span className="inline-flex md:hidden items-center gap-0.5 px-1.5 py-0.5 bg-gray-50 text-gray-700 rounded text-[10px] font-medium border border-gray-200">
+                        <Activity className="w-2.5 h-2.5" />
                         {profile.lastDonationDate ? getDaysSinceLastDonation() : '-'}d
                       </span>
                     </div>
@@ -621,30 +621,30 @@ export default function Dashboard() {
           )}
 
           {/* Tabs Navigation - Instagram Style */}
-          <div className="mb-1 md:mb-6 border-t border-gray-200">
+          <div className="mb-2 md:mb-6 border-t border-gray-200">
             <div className="flex">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`flex-1 py-1.5 md:py-3 flex items-center justify-center gap-0.5 md:gap-2 font-medium transition-all border-t-2 -mt-[1px] ${
+                className={`flex-1 py-2 md:py-3 flex items-center justify-center gap-1 md:gap-2 font-medium transition-all border-t-2 -mt-[1px] ${
                   activeTab === 'overview'
                     ? 'border-gray-900 text-gray-900'
                     : 'border-transparent text-gray-400'
                 }`}
               >
-                <Activity className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                <span className="text-[9px] md:text-sm uppercase tracking-wide font-semibold">Overview</span>
+                <Activity className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="text-[11px] sm:text-xs md:text-sm uppercase tracking-wide font-semibold">Overview</span>
               </button>
               {profile && (
                 <button
                   onClick={() => setActiveTab('posts')}
-                  className={`flex-1 py-1.5 md:py-3 flex items-center justify-center gap-0.5 md:gap-2 font-medium transition-all border-t-2 -mt-[1px] ${
+                  className={`flex-1 py-2 md:py-3 flex items-center justify-center gap-1 md:gap-2 font-medium transition-all border-t-2 -mt-[1px] ${
                     activeTab === 'posts'
                       ? 'border-gray-900 text-gray-900'
                       : 'border-transparent text-gray-400'
                   }`}
                 >
-                  <Grid3x3 className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  <span className="text-[9px] md:text-sm uppercase tracking-wide font-semibold">Posts</span>
+                  <Grid3x3 className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-[11px] sm:text-xs md:text-sm uppercase tracking-wide font-semibold">Posts</span>
                 </button>
               )}
             </div>
@@ -742,21 +742,21 @@ export default function Dashboard() {
                 {/* Donation History & Actions Card */}
                 <div className="space-y-4">
                   {/* Donation Status Card */}
-                  <div className="bg-gradient-to-br from-white to-red-50/30 rounded-2xl shadow-lg p-4 border border-red-100/50 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-red-100">
-                      <History className="h-4 w-4 text-red-600" />
-                      <h3 className="text-sm font-bold text-gray-900">Donation History</h3>
+                  <div className="bg-gradient-to-br from-white to-red-50/30 rounded-xl md:rounded-2xl shadow-md md:shadow-lg p-3 md:p-4 border border-red-100/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3 pb-2 border-b border-red-100">
+                      <History className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600" />
+                      <h3 className="text-xs md:text-sm font-bold text-gray-900">Donation History</h3>
                     </div>
                     {profile.lastDonationDate ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2 md:space-y-3">
                         <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="bg-red-500 p-2 rounded-lg">
-                              <Droplet className="h-4 w-4 text-white" />
+                          <div className="flex items-center gap-1.5 md:gap-2">
+                            <div className="bg-red-500 p-1.5 md:p-2 rounded-lg">
+                              <Droplet className="h-3.5 w-3.5 md:h-4 md:w-4 text-white" />
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500">Last Donation</p>
-                              <p className="text-sm font-bold text-gray-900">
+                              <p className="text-[10px] md:text-xs text-gray-500">Last Donation</p>
+                              <p className="text-xs md:text-sm font-bold text-gray-900">
                                 {new Date(profile.lastDonationDate).toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
@@ -766,29 +766,29 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-red-600">{getDaysSinceLastDonation()}</p>
-                            <p className="text-xs text-gray-500">days ago</p>
+                            <p className="text-xl md:text-2xl font-bold text-red-600">{getDaysSinceLastDonation()}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500">days ago</p>
                           </div>
                         </div>
-                        <div className={`flex items-center gap-2 p-2.5 rounded-lg ${
+                        <div className={`flex items-center gap-1.5 md:gap-2 p-2 md:p-2.5 rounded-lg ${
                           canDonateAgain() 
                             ? 'bg-green-500 text-white' 
                             : 'bg-amber-500 text-white'
                         }`}>
                           {canDonateAgain() ? (
-                            <><CheckCircle className="h-4 w-4" /> <span className="text-xs font-semibold">Ready to Donate Again!</span></>
+                            <><CheckCircle className="h-3.5 w-3.5 md:h-4 md:w-4" /> <span className="text-[10px] md:text-xs font-semibold">Ready to Donate Again!</span></>
                           ) : (
-                            <><Clock className="h-4 w-4" /> <span className="text-xs font-semibold">{90 - (getDaysSinceLastDonation() || 0)} days until eligible</span></>
+                            <><Clock className="h-3.5 w-3.5 md:h-4 md:w-4" /> <span className="text-[10px] md:text-xs font-semibold">{90 - (getDaysSinceLastDonation() || 0)} days until eligible</span></>
                           )}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center py-6">
-                        <div className="bg-gray-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <Calendar className="h-6 w-6 text-gray-400" />
+                      <div className="text-center py-4 md:py-6">
+                        <div className="bg-gray-100 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
                         </div>
-                        <p className="text-sm text-gray-600 font-medium">No donation yet</p>
-                        <p className="text-xs text-gray-500 mt-1">Record your first donation</p>
+                        <p className="text-xs md:text-sm text-gray-600 font-medium">No donation yet</p>
+                        <p className="text-[10px] md:text-xs text-gray-500 mt-1">Record your first donation</p>
                       </div>
                     )}
                   </div>
@@ -801,29 +801,29 @@ export default function Dashboard() {
                         setNewDonationDate(new Date().toISOString().split('T')[0]);
                         setActiveTab('edit');
                       }}
-                      className="group bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm"
+                      className="group bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold py-2.5 md:py-3 px-3 md:px-4 rounded-lg md:rounded-xl shadow-md md:shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-1.5 md:gap-2 text-xs md:text-sm"
                     >
-                      <Droplet className="w-4 h-4" />
+                      <Droplet className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       Record Donation
                     </button>
                     <button
                       onClick={handleToggleAvailability}
                       disabled={!profile.isAvailable && !canDonateAgain()}
-                      className={`font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                      className={`font-semibold py-2.5 md:py-3 px-3 md:px-4 rounded-lg md:rounded-xl shadow-md md:shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-1.5 md:gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm ${
                         profile.isAvailable
                           ? 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
                           : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white'
                       }`}
                     >
-                      {profile.isAvailable ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                      {profile.isAvailable ? <XCircle className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <CheckCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />}
                       {profile.isAvailable ? 'Mark Unavailable' : 'Mark Available'}
                     </button>
                   </div>
                   
                   {!profile.isAvailable && !canDonateAgain() && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
-                      <p className="text-xs text-amber-700 text-center font-medium">
-                        ⚠️ Wait {90 - (getDaysSinceLastDonation() || 0)} more days to become available
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      <p className="text-[10px] md:text-xs text-amber-700 text-center font-medium">
+                        ⚠️ Wait {90 - (getDaysSinceLastDonation() || 0)} more days
                       </p>
                     </div>
                   )}
@@ -1175,73 +1175,57 @@ export default function Dashboard() {
 
             {/* Posts Tab */}
             {activeTab === 'posts' && profile && (
-              <div className="space-y-4">
-                {/* Upload Button - Modern Style */}
+              <div className="space-y-3 md:space-y-4">
+                {/* Upload Button */}
                 <button
                   onClick={() => setShowUpload(true)}
-                  className="w-full group relative overflow-hidden bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold px-4 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:scale-105 duration-200"
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold px-3 md:px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all flex items-center justify-center gap-1.5 md:gap-2 text-xs md:text-sm shadow-md hover:shadow-lg"
                 >
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
-                  <Plus className="w-5 h-5 relative z-10" />
-                  <span className="relative z-10">Add New Post</span>
+                  <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                  Add New Post
                 </button>
 
                 {posts.length > 0 ? (
                   <>
-                    {/* Gallery Grid - Instagram Style */}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-1.5 p-1 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-sm">
-                      {posts.map((post) => (
+                    {/* Gallery Grid */}
+                    <div className="grid grid-cols-3 gap-1.5 md:gap-3">
+                      {posts.map((post, index) => (
                         <button
                           key={post.id}
                           onClick={() => setSelectedPost(post)}
-                          className="group relative aspect-square overflow-hidden bg-gray-200 cursor-pointer rounded-lg transition-all hover:shadow-lg"
+                          className="group aspect-square relative rounded-lg md:rounded-xl overflow-hidden cursor-pointer bg-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                          style={{ animationDelay: `${index * 50}ms` }}
                         >
                           <Image 
                             src={post.imageUrl} 
                             alt={post.caption || 'Post'} 
                             fill 
-                            className="object-cover group-hover:scale-110 transition-transform duration-300" 
+                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
                             unoptimized 
                           />
-                          {/* Overlay with Icons */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                              <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                              <span className="text-xs font-semibold text-gray-900">View</span>
-                            </div>
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-2 md:p-3">
+                            {post.caption && (
+                              <p className="text-white text-[10px] md:text-xs line-clamp-2 font-medium">{post.caption}</p>
+                            )}
+                            <p className="text-white/70 text-[8px] md:text-[10px] mt-0.5 md:mt-1">
+                              {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
                           </div>
                         </button>
                       ))}
                     </div>
 
                     {/* Post Count */}
-                    <div className="flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50 p-3.5 rounded-xl border border-slate-200">
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                          <Grid3x3 className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-xs text-gray-600">Total Posts</p>
-                          <p className="text-lg font-bold text-gray-900">{posts.length}</p>
-                        </div>
-                      </div>
-                      <Camera className="w-5 h-5 text-gray-400" />
+                    <div className="text-center text-xs md:text-sm text-gray-500">
+                      {posts.length} {posts.length === 1 ? 'post' : 'posts'}
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl border-2 border-dashed border-gray-300 group hover:border-gray-400 transition-colors">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 blur-lg opacity-20 rounded-full"></div>
-                      <Camera className="h-16 w-16 text-gray-300 relative" />
-                    </div>
-                    <p className="text-gray-600 font-bold mb-1 text-base">Share Your Story</p>
-                    <p className="text-xs text-gray-500 mb-4">Upload photos from your donation journey</p>
-                    <button
-                      onClick={() => setShowUpload(true)}
-                      className="text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-all"
-                    >
-                      Create Your First Post
-                    </button>
+                  <div className="flex flex-col items-center justify-center py-8 md:py-12 px-4 bg-gray-50 rounded-lg md:rounded-xl border border-gray-200">
+                    <Camera className="h-10 w-10 md:h-12 md:w-12 text-gray-300 mb-2 md:mb-3" />
+                    <p className="text-gray-600 font-medium mb-1 text-sm md:text-base">No posts yet</p>
+                    <p className="text-[10px] md:text-xs text-gray-500">Share photos from your donation journey</p>
                   </div>
                 )}
               </div>
@@ -1250,27 +1234,38 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Edit Post Modal - Modern Style */}
+      {/* Modern Edit Post Modal */}
       {editingPost && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-blue-50">
-              <h3 className="text-xl font-bold text-gray-900">Edit Caption</h3>
-              <button 
-                onClick={() => {
-                  setEditingPost(null);
-                  setEditCaption('');
-                }}
-                className="text-gray-400 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-full p-1.5"
-              >
-                <X className="h-6 w-6" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setEditingPost(null); setEditCaption(''); }} />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95">
+            {/* Header with gradient */}
+            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 p-[2px]">
+              <div className="bg-white px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl">
+                    <Edit2 className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Edit Caption</h3>
+                    <p className="text-xs text-gray-500">Update your post</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => { setEditingPost(null); setEditCaption(''); }}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
             </div>
             
-            <div className="p-5 space-y-4">
-              {/* Image */}
-              <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200">
+            <div className="p-6 space-y-4">
+              {/* Image Preview */}
+              <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 shadow-inner">
                 <Image 
                   src={editingPost.imageUrl} 
                   alt="Post" 
@@ -1282,127 +1277,152 @@ export default function Dashboard() {
 
               {/* Caption Input */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
-                  Caption
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Caption</label>
                 <textarea
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-sm"
                   placeholder="Update your caption..."
                   value={editCaption}
                   onChange={(e) => setEditCaption(e.target.value)}
                   maxLength={2200}
                   rows={4}
                 />
-                <p className="text-xs text-gray-500 mt-1">{editCaption.length}/2200</p>
+                <p className="text-xs text-gray-400 mt-1 text-right">{editCaption.length}/2200</p>
               </div>
 
-              {/* Save Button */}
-              <button 
-                onClick={handleEditPost}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 duration-200"
-              >
-                Save Changes
-              </button>
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => { setEditingPost(null); setEditCaption(''); }}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleEditPost}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-blue-200 transition-all"
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Upload Post Modal - Modern Style */}
+      {/* Modern Upload Post Modal */}
       {showUpload && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-blue-50">
-              <h3 className="text-xl font-bold text-gray-900">Create Post</h3>
-              <button 
-                onClick={() => {
-                  setShowUpload(false);
-                  setImageFile(null);
-                  setCaption('');
-                }}
-                className="text-gray-400 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-full p-1.5"
-              >
-                <X className="h-6 w-6" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowUpload(false); setImageFile(null); setCaption(''); }} />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95">
+            {/* Header with gradient */}
+            <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 p-[2px]">
+              <div className="bg-white px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Create Post</h3>
+                    <p className="text-xs text-gray-500">Share a moment</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => { setShowUpload(false); setImageFile(null); setCaption(''); }}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
             </div>
             
-            <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-              {/* Image Upload */}
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
-                  Photo
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="image-upload"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = () => setImageFile(reader.result as string);
-                      }
-                    }}
-                  />
-                  {!imageFile ? (
-                    <label htmlFor="image-upload" className="block w-full p-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all text-center">
-                      <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="font-semibold text-gray-700 text-sm">Select a photo</p>
-                      <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
-                    </label>
-                  ) : (
-                    <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200">
-                      <Image 
-                        src={imageFile} 
-                        alt="Preview" 
-                        fill 
-                        className="object-cover" 
-                        unoptimized 
-                      />
-                      <button
-                        onClick={() => {
-                          setImageFile(null);
-                          const input = document.getElementById('image-upload') as HTMLInputElement;
-                          if (input) input.value = '';
-                        }}
-                        className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-full p-1.5 transition-all"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* File Upload Area */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="dashboard-image-upload"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onload = () => setImageFile(reader.result as string);
+                    }
+                  }}
+                />
+                {!imageFile ? (
+                  <label 
+                    htmlFor="dashboard-image-upload"
+                    className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50/30 transition-all duration-300"
+                  >
+                    <div className="p-3 bg-gray-100 rounded-full mb-3">
+                      <Camera className="h-8 w-8 text-gray-400" />
                     </div>
-                  )}
-                </div>
+                    <p className="text-sm font-medium text-gray-600">Click to upload photo</p>
+                    <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+                  </label>
+                ) : (
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden group">
+                    <Image src={imageFile} alt="Preview" fill className="object-cover" unoptimized />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <label 
+                        htmlFor="dashboard-image-upload"
+                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-100 transition-colors"
+                      >
+                        Change Photo
+                      </label>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setImageFile(null);
+                        const input = document.getElementById('dashboard-image-upload') as HTMLInputElement;
+                        if (input) input.value = '';
+                      }}
+                      className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-full p-1.5 transition-all"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
+              {/* Caption */}
               {imageFile && (
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
-                    Caption
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Caption</label>
                   <textarea
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm placeholder-gray-400"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none text-sm"
                     placeholder="Write a caption... (optional)"
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
                     maxLength={2200}
                     rows={4}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{caption.length}/2200</p>
+                  <p className="text-xs text-gray-400 mt-1 text-right">{caption.length}/2200</p>
                 </div>
               )}
 
-              {imageFile && (
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => { setShowUpload(false); setImageFile(null); setCaption(''); }}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
                 <button 
                   onClick={handleUploadPost}
-                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 duration-200"
+                  disabled={!imageFile}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-red-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
                 >
                   Post
                 </button>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -1410,87 +1430,145 @@ export default function Dashboard() {
 
       <Footer />
 
-      {/* Post Viewer Modal - Instagram Style */}
+      {/* Modern Post Viewer Modal */}
       {selectedPost && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setSelectedPost(null)}>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center" 
+          onClick={() => setSelectedPost(null)}
+        >
+          {/* Backdrop with blur */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" />
+          
+          {/* Close button */}
           <button
             onClick={() => setSelectedPost(null)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10 bg-black/50 hover:bg-black/70 rounded-full p-2.5 backdrop-blur-sm"
+            className="absolute top-4 right-4 md:top-6 md:right-6 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all duration-300 group"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
           </button>
-          <div className="max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row gap-0 rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          
+          {/* Content Container */}
+          <div 
+            className="relative z-10 w-full max-w-6xl mx-4 max-h-[90vh] flex flex-col lg:flex-row gap-0 overflow-hidden animate-in zoom-in-95 fade-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Image Section */}
-            <div className="flex-1 relative bg-black flex items-center justify-center min-h-96 md:min-h-auto">
-              <Image
-                src={selectedPost.imageUrl}
-                alt={selectedPost.caption || 'Post'}
-                width={800}
-                height={800}
-                className="max-h-[70vh] md:max-h-[85vh] w-auto object-contain"
-                unoptimized
-              />
+            <div className="flex-1 relative bg-black/40 backdrop-blur-sm rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none flex items-center justify-center min-h-[300px] lg:min-h-[500px]">
+              <div className="relative w-full h-full flex items-center justify-center p-4">
+                <Image
+                  src={selectedPost.imageUrl}
+                  alt={selectedPost.caption || 'Post'}
+                  width={900}
+                  height={900}
+                  className="max-h-[50vh] lg:max-h-[80vh] w-auto object-contain rounded-lg shadow-2xl"
+                  unoptimized
+                />
+              </div>
+              
+              {/* Image gradient overlay at bottom for mobile */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent lg:hidden" />
             </div>
-
-            {/* Details Section */}
-            <div className="md:w-96 bg-white flex flex-col shadow-xl">
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  {profile?.profilePicture ? (
-                    <div className="w-10 h-10 relative rounded-full overflow-hidden border-2 border-gradient-to-r from-red-500 to-pink-500">
-                      <Image src={profile.profilePicture} alt={session?.user.name || 'User'} fill className="object-cover" unoptimized />
+            
+            {/* Details Panel */}
+            <div className="lg:w-96 bg-white rounded-b-2xl lg:rounded-r-2xl lg:rounded-bl-none flex flex-col max-h-[40vh] lg:max-h-none overflow-hidden">
+              {/* User Header */}
+              <div className="p-5 border-b border-gray-100 flex items-center gap-4">
+                {profile?.profilePicture ? (
+                  <div className="relative">
+                    <Image
+                      src={profile.profilePicture}
+                      alt={session?.user.name || 'User'}
+                      width={52}
+                      height={52}
+                      className="w-13 h-13 rounded-full object-cover ring-2 ring-red-100"
+                      unoptimized
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <Droplet className="h-3 w-3 text-white" />
                     </div>
-                  ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="h-5 w-5 text-white" />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="w-13 h-13 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-xl font-bold text-white">
+                        {session?.user.name?.charAt(0).toUpperCase()}
+                      </span>
                     </div>
-                  )}
-                  <div>
-                    <p className="font-bold text-sm text-gray-900">{session?.user.name}</p>
-                    <p className="text-xs text-gray-500">{new Date(selectedPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
+                      <Droplet className="h-3 w-3 text-red-500" />
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">{session?.user.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                      {profile?.bloodGroup.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(selectedPost.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </span>
                   </div>
                 </div>
               </div>
-
-              {/* Caption */}
-              <div className="flex-1 overflow-y-auto p-4 md:p-5">
+              
+              {/* Caption Section */}
+              <div className="flex-1 overflow-y-auto p-5">
                 {selectedPost.caption ? (
-                  <div>
-                    <p className="text-gray-900 font-medium text-sm mb-2">{session?.user.name}</p>
-                    <p className="text-gray-700 text-sm leading-relaxed break-words">{selectedPost.caption}</p>
+                  <div className="space-y-4">
+                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                      {selectedPost.caption}
+                    </p>
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm italic">No caption added</p>
+                  <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                    <p>No caption</p>
+                  </div>
                 )}
               </div>
-
-              {/* Actions */}
-              <div className="border-t border-gray-100 p-4 md:p-5 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50">
-                <div className="flex gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedPost(null);
-                      setEditingPost(selectedPost);
-                      setEditCaption(selectedPost.caption || '');
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold text-sm py-2 px-3 rounded-lg transition-all"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedPost(null);
-                      handleDeletePost(selectedPost.id);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold text-sm py-2 px-3 rounded-lg transition-all"
-                  >
-                    <X className="h-4 w-4" />
-                    Delete
-                  </button>
+              
+              {/* Footer Actions */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>
+                      {new Date(selectedPost.createdAt).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPost(null);
+                        setEditingPost(selectedPost);
+                        setEditCaption(selectedPost.caption || '');
+                      }}
+                      className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium text-xs py-2 px-3 rounded-lg transition-all"
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPost(null);
+                        handleDeletePost(selectedPost.id);
+                      }}
+                      className="flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 font-medium text-xs py-2 px-3 rounded-lg transition-all"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
