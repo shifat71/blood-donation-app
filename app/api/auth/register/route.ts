@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
             <p>Hi ${escapeHtml(name)},</p>
             <p>Thank you for registering. Your verification code is:</p>
             <h1 style="background: #fee2e2; color: #dc2626; padding: 20px; text-align: center; border-radius: 8px; letter-spacing: 8px;">
-              ${otp}
+              ${escapeHtml(otp)}
             </h1>
             <p>This code will expire in 10 minutes.</p>
             <p style="color: #6b7280; font-size: 14px;">If you didn't create this account, please ignore this email.</p>
