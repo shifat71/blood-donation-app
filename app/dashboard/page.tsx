@@ -98,6 +98,20 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
+  // Handle Escape key to close modals
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedPost) setSelectedPost(null);
+        else if (showUpload) { setShowUpload(false); setImageFile(null); setCaption(''); }
+        else if (editingPost) { setEditingPost(null); setEditCaption(''); }
+        else if (showSuccessModal) setShowSuccessModal(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [selectedPost, showUpload, editingPost, showSuccessModal]);
+
   const fetchProfile = async () => {
     try {
       const response = await fetch('/api/donor/profile');
@@ -1194,7 +1208,7 @@ export default function Dashboard() {
                           key={post.id}
                           onClick={() => setSelectedPost(post)}
                           className="group aspect-square relative rounded-lg md:rounded-xl overflow-hidden cursor-pointer bg-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-                          style={{ animationDelay: `${index * 50}ms` }}
+                          style={{ animationDelay: `${Math.min(index * 50, 500)}ms` }}
                         >
                           <Image 
                             src={post.imageUrl} 
@@ -1480,7 +1494,7 @@ export default function Dashboard() {
                       alt={session?.user.name || 'User'}
                       width={52}
                       height={52}
-                      className="w-13 h-13 rounded-full object-cover ring-2 ring-red-100"
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-red-100"
                       unoptimized
                     />
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -1489,7 +1503,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="relative">
-                    <div className="w-13 h-13 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg">
                       <span className="text-xl font-bold text-white">
                         {session?.user.name?.charAt(0).toUpperCase()}
                       </span>
