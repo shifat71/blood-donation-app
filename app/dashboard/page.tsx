@@ -8,7 +8,8 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import VerificationUpload from '@/components/VerificationUpload';
-import { User, Droplet, CheckCircle, XCircle, Clock, Camera, Phone, MapPin, Calendar, Mail, History, Plus, Grid3x3, X, Edit2, Activity, Heart, Building2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { PasswordChangeModal } from '@/components/PasswordChangeModal';
+import { User, Droplet, CheckCircle, XCircle, Clock, Camera, Phone, MapPin, Calendar, Mail, History, Plus, Grid3x3, X, Edit2, Activity, Heart, Building2, MoreHorizontal, Trash2, Lock } from 'lucide-react';
 import { BloodGroup } from '@prisma/client';
 
 type Post = {
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editCaption, setEditCaption] = useState('');
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -1185,6 +1187,25 @@ export default function Dashboard() {
                         </p>
                       )}
                     </div>
+
+                    {/* Security Section */}
+                    <div className="pt-4 md:pt-6 border-t-2 border-gray-200">
+                      <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <div className="bg-gray-100 p-1.5 md:p-2 rounded-lg">
+                          <Lock className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+                        </div>
+                        <span className="text-sm md:text-base font-bold text-gray-800">Security</span>
+                      </div>
+                      <button
+                        onClick={() => setShowPasswordModal(true)}
+                        className="w-full py-2.5 md:py-3 px-4 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-lg border-2 bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                      >
+                        🔐 Change Password
+                      </button>
+                      <p className="text-xs text-gray-600 mt-2 md:mt-3 text-center bg-gray-50 p-2 md:p-3 rounded-lg">
+                        💡 Use a strong password to keep your account secure
+                      </p>
+                    </div>
                   </>
                 )}
               </div>
@@ -1616,6 +1637,12 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
     </div>
   );
 }
