@@ -86,8 +86,8 @@ export async function GET(req: Request) {
     const status = url.searchParams.get('status');
 
     // Validate status if provided
-    if (status && !['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
-      return NextResponse.json({ error: 'Invalid status filter. Must be PENDING, APPROVED, or REJECTED.' }, { status: 400 });
+    if (status && !['PENDING', 'APPROVED', 'REJECTED', 'FULFILLED'].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status filter. Must be PENDING, APPROVED, REJECTED, or FULFILLED.' }, { status: 400 });
     }
 
     const where: Prisma.BloodRequestWhereInput = {};
@@ -104,6 +104,9 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' },
       include: {
         moderator: {
+          select: { name: true, email: true },
+        },
+        acceptedDonor: {
           select: { name: true, email: true },
         },
       },

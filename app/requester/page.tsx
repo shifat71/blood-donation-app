@@ -21,6 +21,11 @@ type BloodRequest = {
   status: string;
   createdAt: string;
   approvedAt?: string;
+  acceptedAt?: string;
+  acceptedDonor?: {
+    name: string;
+    email: string;
+  };
 };
 
 export default function RequesterDashboard() {
@@ -78,6 +83,8 @@ export default function RequesterDashboard() {
         return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Approved</span>;
       case 'REJECTED':
         return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium flex items-center gap-1"><XCircle className="h-3 w-3" /> Rejected</span>;
+      case 'FULFILLED':
+        return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Donor Found</span>;
       default:
         return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{status}</span>;
     }
@@ -178,6 +185,25 @@ export default function RequesterDashboard() {
                       <p className="text-xs sm:text-sm text-green-800">
                         ✓ Approved on {new Date(req.approvedAt).toLocaleString()} - Donors have been notified!
                       </p>
+                    </div>
+                  )}
+
+                  {req.status === 'FULFILLED' && req.acceptedDonor && (
+                    <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs sm:text-sm text-blue-800 font-semibold mb-1">
+                        🎉 A donor has accepted your request!
+                      </p>
+                      <p className="text-xs sm:text-sm text-blue-700">
+                        <strong>Donor:</strong> {req.acceptedDonor.name}
+                      </p>
+                      <p className="text-xs sm:text-sm text-blue-700">
+                        <strong>Email:</strong> {req.acceptedDonor.email}
+                      </p>
+                      {req.acceptedAt && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Accepted on {new Date(req.acceptedAt).toLocaleString()}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

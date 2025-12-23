@@ -76,10 +76,20 @@ export async function POST(req: Request) {
         },
         include: {
           user: {
-            select: { email: true, name: true },
+            select: { id: true, email: true, name: true },
           },
         },
       });
+
+      if (donors.length > 0) {
+        await prisma.donorNotification.createMany({
+          data: donors.map((donor) => ({
+            donorId: donor.user.id,
+            bloodRequestId: bloodRequest.id,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
       console.log(`[Blood Request Approval] Found ${donors.length} matching donors for blood group ${bloodRequest.bloodGroup}`);
 

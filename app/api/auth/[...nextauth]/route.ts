@@ -9,4 +9,6 @@ const handler = NextAuth({
   },
 });
 
+export const dynamic = 'force-dynamic';
+
 export { handler as GET, handler as POST };
