@@ -60,6 +60,8 @@ model User {
   moderatorActions  VerificationRequest[] @relation("ModeratorActions")
   posts             Post[]
   bloodRequests     BloodRequest[]
+  acceptedRequests  BloodRequest[]     @relation("AcceptedDonor")
+  donorNotifications DonorNotification[]
   
   @@index([email])
   @@index([role])
@@ -129,6 +131,12 @@ enum RequestStatus {
   FULFILLED
 }
 
+enum NotificationStatus {
+  UNREAD
+  READ
+  CLOSED
+}
+
 model BloodRequest {
   id                String        @id @default(cuid())
   requesterName     String
@@ -149,8 +157,30 @@ model BloodRequest {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   approvedAt        DateTime?
+  acceptedAt        DateTime?
+  acceptedDonorId   String?
+  acceptedDonor     User?         @relation("AcceptedDonor", fields: [acceptedDonorId], references: [id])
+
+  donorNotifications DonorNotification[]
   
   @@index([status])
   @@index([bloodGroup])
+  @@index([createdAt])
+}
+
+model DonorNotification {
+  id             String             @id @default(cuid())
+  donorId        String
+  bloodRequestId String
+  status         NotificationStatus @default(UNREAD)
+  readAt         DateTime?
+  acceptedAt     DateTime?
+  createdAt      DateTime           @default(now())
+
+  donor          User               @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  bloodRequest   BloodRequest       @relation(fields: [bloodRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([donorId, bloodRequestId])
+  @@index([status])
   @@index([createdAt])
 }

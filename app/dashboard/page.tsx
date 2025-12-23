@@ -38,6 +38,30 @@ type DonorProfile = {
   };
 };
 
+type DonorNotification = {
+  id: string;
+  status: 'UNREAD' | 'READ' | 'CLOSED';
+  createdAt: string;
+  readAt?: string | null;
+  acceptedAt?: string | null;
+  bloodRequest: {
+    id: string;
+    bloodGroup: BloodGroup;
+    urgency: string;
+    location: string;
+    hospitalName?: string | null;
+    patientName?: string | null;
+    unitsNeeded: number;
+    additionalInfo?: string | null;
+    requesterName: string;
+    requesterPhone: string;
+    requesterEmail: string;
+    createdAt: string;
+    approvedAt?: string | null;
+    status: string;
+  };
+};
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -63,6 +87,10 @@ export default function Dashboard() {
   const [editCaption, setEditCaption] = useState('');
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [notifications, setNotifications] = useState<DonorNotification[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     bloodGroup: '',
     phoneNumber: '',
@@ -91,6 +119,7 @@ export default function Dashboard() {
     if (session) {
       fetchProfile();
       checkVerificationRequest();
+      fetchNotifications();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
@@ -145,6 +174,26 @@ export default function Dashboard() {
     }
   };
 
+  const fetchNotifications = async () => {
+    if (!session) return;
+    setNotificationsLoading(true);
+    setNotificationsError('');
+    try {
+      const response = await fetch('/api/donor/notifications');
+      const data = await response.json();
+      if (response.ok) {
+        setNotifications(data.notifications || []);
+      } else {
+        setNotificationsError(data.error || 'Failed to load notifications');
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      setNotificationsError('Failed to load notifications');
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
   const checkVerificationRequest = async () => {
     try {
       const response = await fetch('/api/verification/request');
@@ -166,6 +215,33 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
+    }
+  };
+
+  const handleAcceptNotification = async (notificationId: string) => {
+    setAcceptingId(notificationId);
+    try {
+      const response = await fetch('/api/blood-requests/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage('You accepted this blood request. Please contact the requester.');
+        setTimeout(() => setSuccessMessage(''), 4000);
+        await Promise.all([fetchNotifications(), fetchProfile()]);
+      } else {
+        showError(data.error || 'Failed to accept request');
+        await fetchNotifications();
+      }
+    } catch (error) {
+      console.error('Error accepting request:', error);
+      showError('Failed to accept request');
+    } finally {
+      setAcceptingId(null);
     }
   };
 
@@ -845,6 +921,110 @@ export default function Dashboard() {
                       <p className="text-[10px] md:text-xs text-amber-700 text-center font-medium">
                         ⚠️ Wait {90 - (getDaysSinceLastDonation() || 0)} more days
                       </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Blood Request Notifications */}
+            {activeTab === 'overview' && profile && (
+              <div className="mb-4 md:mb-6">
+                <div className="bg-white rounded-xl md:rounded-2xl shadow-lg border border-red-100 overflow-hidden">
+                  <div className="bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Droplet className="h-5 w-5 text-white" />
+                      <h3 className="text-white font-bold text-sm md:text-base">Blood Donation Requests</h3>
+                    </div>
+                    <span className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {notifications.filter(n => n.status !== 'CLOSED' && n.bloodRequest.status === 'APPROVED').length} active
+                    </span>
+                  </div>
+                  
+                  {notificationsLoading ? (
+                    <div className="p-6 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                    </div>
+                  ) : notificationsError ? (
+                    <div className="p-4 text-center text-red-600 text-sm">{notificationsError}</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="p-6 text-center">
+                      <Droplet className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm font-medium">No blood requests yet</p>
+                      <p className="text-gray-400 text-xs mt-1">When someone needs your blood type, you&apos;ll see it here</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                      {notifications
+                        .filter(n => n.bloodRequest.status === 'APPROVED' || n.bloodRequest.status === 'FULFILLED')
+                        .map((notification) => {
+                          const req = notification.bloodRequest;
+                          const isAccepted = notification.status === 'CLOSED' || req.status === 'FULFILLED';
+                          const isAcceptedByMe = notification.acceptedAt != null;
+                          
+                          return (
+                            <div key={notification.id} className={`p-4 ${isAccepted ? 'bg-gray-50' : 'hover:bg-red-50/30'} transition-colors`}>
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-bold text-red-600 text-sm md:text-base">
+                                      {req.bloodGroup.replace('_', ' ')}
+                                    </span>
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium ${
+                                      req.urgency === 'URGENT' ? 'bg-red-100 text-red-800' :
+                                      req.urgency === 'MODERATE' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-green-100 text-green-800'
+                                    }`}>
+                                      {req.urgency}
+                                    </span>
+                                    {isAccepted && (
+                                      <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium ${
+                                        isAcceptedByMe ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                      }`}>
+                                        {isAcceptedByMe ? '✓ You Accepted' : 'Fulfilled'}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="text-xs md:text-sm text-gray-600 space-y-0.5">
+                                    <p><span className="font-medium">📍 Location:</span> {req.location}</p>
+                                    {req.hospitalName && <p><span className="font-medium">🏥 Hospital:</span> {req.hospitalName}</p>}
+                                    {req.patientName && <p><span className="font-medium">👤 Patient:</span> {req.patientName}</p>}
+                                    <p><span className="font-medium">💉 Units:</span> {req.unitsNeeded}</p>
+                                  </div>
+                                  
+                                  {isAcceptedByMe && (
+                                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                      <p className="text-xs md:text-sm text-green-800 font-medium mb-1">Contact Requester:</p>
+                                      <p className="text-xs text-green-700">📱 {req.requesterPhone}</p>
+                                      <p className="text-xs text-green-700">📧 {req.requesterEmail}</p>
+                                    </div>
+                                  )}
+                                  
+                                  <p className="text-[10px] md:text-xs text-gray-400 mt-1">
+                                    {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                                </div>
+                                
+                                {!isAccepted && profile.isAvailable && (
+                                  <button
+                                    onClick={() => handleAcceptNotification(notification.id)}
+                                    disabled={acceptingId === notification.id}
+                                    className="flex-shrink-0 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {acceptingId === notification.id ? 'Accepting...' : '✓ Accept Request'}
+                                  </button>
+                                )}
+                                
+                                {!isAccepted && !profile.isAvailable && (
+                                  <span className="flex-shrink-0 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                                    Mark yourself available to accept
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   )}
                 </div>
