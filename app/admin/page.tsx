@@ -2,10 +2,11 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Users, Shield, UserCog, XCircle } from 'lucide-react';
+import { PasswordChangeModal } from '@/components/PasswordChangeModal';
+import { Users, Shield, UserCog, XCircle, Lock } from 'lucide-react';
 import { Role } from '@prisma/client';
 
 type User = {
@@ -26,10 +27,20 @@ export default function AdminDashboard() {
   const [newRole, setNewRole] = useState<Role>(Role.DONOR);
   const [activeTab, setActiveTab] = useState<'all' | 'donors' | 'requesters'>('all');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const itemsPerPage = 10;
 
   const showError = (message: string) => {
     setErrorMessage(message);
     setTimeout(() => setErrorMessage(''), 4000);
+  };
+
+  const showSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 4000);
   };
 
   useEffect(() => {
@@ -45,6 +56,11 @@ export default function AdminDashboard() {
       fetchUsers();
     }
   }, [session]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
 
   const fetchUsers = async () => {
     try {
@@ -78,11 +94,85 @@ export default function AdminDashboard() {
       if (response.ok) {
         await fetchUsers();
         setSelectedUser(null);
+        showSuccess(`Successfully updated ${selectedUser.name}'s role to ${newRole}`);
+      } else {
+        const data = await response.json();
+        showError(data.error || 'Failed to update role');
       }
     } catch (error) {
       console.error('Error updating role:', error);
+      showError('Failed to update role. Please try again.');
     }
   };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        await fetchUsers();
+        showSuccess(`Successfully deleted ${userName}`);
+      } else {
+        const data = await response.json();
+        showError(data.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      showError('Failed to delete user. Please try again.');
+    }
+  };
+
+  const getRoleBadgeColor = (role: Role) => {
+    switch (role) {
+      case Role.ADMIN:
+        return 'bg-purple-100 text-purple-800';
+      case Role.MODERATOR:
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const stats = useMemo(() => ({
+    totalUsers: users.length,
+    donors: users.filter(u => u.role === Role.DONOR).length,
+    requesters: users.filter(u => u.role === Role.REQUESTER).length,
+    moderators: users.filter(u => u.role === Role.MODERATOR).length,
+    admins: users.filter(u => u.role === Role.ADMIN).length,
+    verified: users.filter(u => u.isVerified).length,
+  }), [users]);
+
+  // Filter and paginate users
+  const { filteredUsers, paginatedUsers, totalPages, startIndex } = useMemo(() => {
+    let filtered = activeTab === 'donors' 
+      ? users.filter(u => u.role === Role.DONOR)
+      : activeTab === 'requesters'
+      ? users.filter(u => u.role === Role.REQUESTER)
+      : users;
+
+    if (searchQuery) {
+      filtered = filtered.filter(u => 
+        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    const total = Math.ceil(filtered.length / itemsPerPage);
+    const start = (currentPage - 1) * itemsPerPage;
+    const paginated = filtered.slice(start, start + itemsPerPage);
+
+    return { filteredUsers: filtered, paginatedUsers: paginated, totalPages: total, startIndex: start };
+  }, [users, activeTab, searchQuery, currentPage, itemsPerPage]);
 
   if (loading || status === 'loading') {
     return (
@@ -99,32 +189,6 @@ export default function AdminDashboard() {
     );
   }
 
-  const getRoleBadgeColor = (role: Role) => {
-    switch (role) {
-      case Role.ADMIN:
-        return 'bg-purple-100 text-purple-800';
-      case Role.MODERATOR:
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const stats = {
-    totalUsers: users.length,
-    donors: users.filter(u => u.role === Role.DONOR).length,
-    requesters: users.filter(u => u.role === Role.REQUESTER).length,
-    moderators: users.filter(u => u.role === Role.MODERATOR).length,
-    admins: users.filter(u => u.role === Role.ADMIN).length,
-    verified: users.filter(u => u.isVerified).length,
-  };
-
-  const filteredUsers = activeTab === 'donors' 
-    ? users.filter(u => u.role === Role.DONOR)
-    : activeTab === 'requesters'
-    ? users.filter(u => u.role === Role.REQUESTER)
-    : users;
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -136,13 +200,22 @@ export default function AdminDashboard() {
             <p className="text-sm sm:text-base text-gray-600 mt-2">Manage users and moderators</p>
           </div>
 
-          {/* Error Message */}
+          {/* Messages */}
           {errorMessage && (
             <div className="mb-4 md:mb-6 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 rounded-xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-lg">
               <div className="bg-red-500 p-2 md:p-3 rounded-full shadow-md">
                 <XCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <p className="text-red-900 font-semibold text-sm md:text-lg">{errorMessage}</p>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-4 md:mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-lg">
+              <div className="bg-green-500 p-2 md:p-3 rounded-full shadow-md">
+                <Shield className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <p className="text-green-900 font-semibold text-sm md:text-lg">{successMessage}</p>
             </div>
           )}
 
@@ -205,6 +278,13 @@ export default function AdminDashboard() {
                   className="w-full btn-secondary text-left text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 truncate"
                 >
                   View All Donors
+                </button>
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="w-full btn-secondary text-left text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 truncate flex items-center gap-2"
+                >
+                  <Lock className="h-4 w-4" />
+                  Change Password
                 </button>
               </div>
             </div>
@@ -277,27 +357,36 @@ export default function AdminDashboard() {
 
           {/* Users Table */}
           <div className="card p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
               <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">Users</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'all' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-                >
-                  All ({stats.totalUsers})
-                </button>
-                <button
-                  onClick={() => setActiveTab('donors')}
-                  className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'donors' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-                >
-                  Donors ({stats.donors})
-                </button>
-                <button
-                  onClick={() => setActiveTab('requesters')}
-                  className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'requesters' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-                >
-                  Requesters ({stats.requesters})
-                </button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input-field text-xs sm:text-sm w-full sm:w-64"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setActiveTab('all')}
+                    className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'all' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                  >
+                    All ({stats.totalUsers})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('donors')}
+                    className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'donors' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                  >
+                    Donors ({stats.donors})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('requesters')}
+                    className={`px-3 py-1.5 text-xs rounded-lg ${activeTab === 'requesters' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                  >
+                    Requesters ({stats.requesters})
+                  </button>
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto -mx-3 sm:-mx-4 lg:-mx-6">
@@ -325,7 +414,14 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                        {searchQuery ? 'No users found matching your search.' : 'No users found.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
                         <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{user.name}</div>
@@ -354,21 +450,109 @@ export default function AdminDashboard() {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setNewRole(user.role);
-                          }}
-                          className="text-xs sm:text-sm text-red-600 hover:text-red-900 font-medium"
-                        >
-                          Change
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setNewRole(user.role);
+                            }}
+                            className="text-xs sm:text-sm text-blue-600 hover:text-blue-900 font-medium"
+                          >
+                            Edit
+                          </button>
+                          {user.role !== Role.ADMIN && (
+                            <button
+                              onClick={() => handleDeleteUser(user.id, user.name)}
+                              className="text-xs sm:text-sm text-red-600 hover:text-red-900 font-medium"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  ))
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 px-3 sm:px-6 py-3 mt-4">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="btn-secondary text-xs px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-xs text-gray-700 flex items-center">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="btn-secondary text-xs px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                      <span className="font-medium">{Math.min(startIndex + itemsPerPage, filteredUsers.length)}</span> of{' '}
+                      <span className="font-medium">{filteredUsers.length}</span> results
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                      <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="btn-secondary text-sm px-3 py-2 rounded-l-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`px-3 py-2 text-sm ${
+                              currentPage === pageNum
+                                ? 'bg-red-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                            } border border-gray-300`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="btn-secondary text-sm px-3 py-2 rounded-r-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -437,6 +621,12 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
 
       <Footer />
     </div>

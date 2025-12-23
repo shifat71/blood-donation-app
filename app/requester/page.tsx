@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Clock, CheckCircle, XCircle, Droplet } from 'lucide-react';
+import { PasswordChangeModal } from '@/components/PasswordChangeModal';
+import { Clock, CheckCircle, XCircle, Droplet, Lock } from 'lucide-react';
 
 type BloodRequest = {
   id: string;
@@ -27,6 +28,7 @@ export default function RequesterDashboard() {
   const router = useRouter();
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -92,13 +94,22 @@ export default function RequesterDashboard() {
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">My Blood Requests</h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Track your blood donation requests</p>
             </div>
-            <button
-              onClick={() => router.push('/request-blood')}
-              className="bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-red-700 flex items-center gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
-            >
-              <Droplet className="h-4 sm:h-5 w-4 sm:w-5" />
-              New Request
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="btn-secondary flex items-center gap-2 text-sm px-4 py-2 sm:py-3"
+              >
+                <Lock className="h-4 w-4" />
+                <span className="hidden sm:inline">Change Password</span>
+              </button>
+              <button
+                onClick={() => router.push('/request-blood')}
+                className="bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-red-700 flex items-center gap-2 text-sm sm:text-base flex-1 sm:flex-none justify-center"
+              >
+                <Droplet className="h-4 sm:h-5 w-4 sm:w-5" />
+                New Request
+              </button>
+            </div>
           </div>
 
           {/* Requests List */}
@@ -175,6 +186,12 @@ export default function RequesterDashboard() {
           )}
         </div>
       </main>
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
 
       <Footer />
     </div>

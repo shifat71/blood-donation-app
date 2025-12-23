@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
+import { PasswordChangeModal } from '@/components/PasswordChangeModal';
+import { CheckCircle, XCircle, Clock, Eye, Lock } from 'lucide-react';
 import { VerificationStatus } from '@prisma/client';
 
 type VerificationRequest = {
@@ -31,6 +32,7 @@ export default function ModeratorDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [reason, setReason] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -134,7 +136,7 @@ export default function ModeratorDashboard() {
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Moderator Dashboard</h1>
               <p className="text-sm sm:text-base text-gray-600 mt-2">Review and approve verification requests</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => router.push('/moderator/blood-requests')}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm flex items-center gap-2"
@@ -146,6 +148,16 @@ export default function ModeratorDashboard() {
                   </span>
                 )}
               </button>
+              {/* Only show Change Password for MODERATOR role, not ADMIN (they have it in their own dashboard) */}
+              {session?.user?.role === 'MODERATOR' && (
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="btn-secondary flex items-center gap-2 text-sm"
+                >
+                  <Lock className="h-4 w-4" />
+                  Change Password
+                </button>
+              )}
               <button
                 onClick={() => {
                   setLoading(true);
@@ -292,6 +304,12 @@ export default function ModeratorDashboard() {
           </div>
         </div>
       )}
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
 
       <Footer />
     </div>
