@@ -85,6 +85,15 @@ export async function POST(req: NextRequest) {
           data: { isAvailable: false },
         });
 
+        // Create notification for the requester
+        await tx.requesterNotification.create({
+          data: {
+            requesterEmail: notification.bloodRequest.requesterEmail,
+            bloodRequestId: notification.bloodRequestId,
+            donorId: session.user.id,
+          },
+        });
+
         const updatedRequest = await tx.bloodRequest.findUnique({
           where: { id: notification.bloodRequestId },
           include: {
