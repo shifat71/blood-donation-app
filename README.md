@@ -1,4 +1,4 @@
-# 🩸 Blood Donation App
+# Blood Donation App
 
 A modern, social-media–style blood donation web application that enables users to find verified blood donors and manage blood-related information securely and efficiently.
 
@@ -6,7 +6,7 @@ The platform is designed with a strong focus on **authenticity**, **trust**, and
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 |------------|---------|
@@ -22,15 +22,15 @@ The platform is designed with a strong focus on **authenticity**, **trust**, and
 
 ---
 
-## 🎯 Objective
+## Objective
 
 The primary objective of this application is to build a **reliable blood donor network** within the university ecosystem, making it easier to locate verified donors during emergencies while maintaining data integrity and privacy.
 
 ---
 
-## ✨ Core Features
+## Core Features
 
-### 🧑🦰 Donor Registration & Verification
+### Donor Registration & Verification
 
 Donors can register through two methods:
 
@@ -46,9 +46,9 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 ---
 
-### 🛡️ Role-Based Access System
+### Role-Based Access System
 
-#### 👤 **Donor**
+#### Donor
 
 - Create and manage comprehensive donor profile
 - Update blood group, phone number, address, and district information
@@ -62,7 +62,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - Change password functionality
 - Maintain accurate and up-to-date blood donation information
 
-#### 🩸 **Requester**
+#### Requester
 
 - Sign in with Google OAuth to submit blood donation requests
 - Create urgent blood requests with detailed information
@@ -72,7 +72,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - No verification required - instant access
 - Accept blood donation offers from donors
 
-#### 🧑⚖️ **Moderator**
+#### Moderator
 
 - Access a dedicated moderator dashboard
 - Verify donor profiles submitted for manual verification
@@ -82,7 +82,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - Update or correct donor information
 - Monitor platform activity
 
-#### 👑 **System Admin**
+#### System Admin
 
 - Full access to the moderator dashboard
 - Add and manage moderators
@@ -91,9 +91,9 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - System-wide configuration and management
  
 
-### 📊 Dashboards
+### Dashboards
 
-#### **Donor Dashboard**
+#### Donor Dashboard
 
 - **Overview Tab**: View complete profile information and verification status
 - **Edit Tab**: Update personal information, blood donation details, and profile picture
@@ -103,7 +103,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - Profile completion status indicators
 - Password change functionality
 
-#### **Moderator Dashboard**
+#### Moderator Dashboard
 
 - **Verifications Tab**: Review and approve pending donor verifications
 - **Blood Requests Tab**: Review and approve/reject blood donation requests
@@ -111,7 +111,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - Access to verification requests queue
 - Trigger email notifications to matching donors upon approval
 
-#### **Admin Dashboard**
+#### Admin Dashboard
 
 - Includes all moderator capabilities
 - Manage moderator accounts and permissions
@@ -119,7 +119,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - Separate tabs for different user roles
 - Platform oversight and analytics
 
-#### **Requester Dashboard**
+#### Requester Dashboard
 
 - View all submitted blood requests
 - Track request status in real-time
@@ -128,7 +128,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 ---
 
-### 🩸 Blood Request System
+### Blood Request System
 
 - **Public Access**: Anyone can submit blood requests via Google Sign-In
 - **Request Form**: Comprehensive form with blood group, urgency, location, hospital, patient details, units needed
@@ -139,7 +139,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - **Status Management**: Track requests through Pending → Approved → Fulfilled/Rejected states
 - **Acceptance System**: Donors can accept requests, marking them as fulfilled
 
-### 📱 Social Features
+### Social Features
 
 - **Post Creation**: Upload images with captions to share donation experiences (via Cloudinary)
 - **Post Management**: Edit captions and delete posts
@@ -149,18 +149,18 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 ---
 
-## 🎨 UI & UX Principles
+## UI & UX Principles
 
-- ✅ Clean, minimal, and modern interface
-- ✅ Intuitive navigation inspired by social platforms
-- ✅ Responsive design for all devices
-- ✅ Clear visual indicators for verification and availability status
-- ✅ Tab-based navigation for organized content
-- ✅ Real-time feedback and success notifications
+- Clean, minimal, and modern interface
+- Intuitive navigation inspired by social platforms
+- Responsive design for all devices
+- Clear visual indicators for verification and availability status
+- Tab-based navigation for organized content
+- Real-time feedback and success notifications
 
 ---
 
-## 🧩 Future Improvements (Planned)
+## Future Improvements (Planned)
 
 - [x] Public blood request system with Google OAuth
 - [x] Email notifications to available donors via Resend
@@ -181,7 +181,7 @@ Manual verification is handled by designated moderators to ensure authenticity.
 
 ---
 
-## 📦 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -233,19 +233,19 @@ See `.env.example` for all required environment variables.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## 👥 Team
+## Team
 
 Built with ❤️ for the SUST community
 
