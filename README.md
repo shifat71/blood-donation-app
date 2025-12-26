@@ -175,9 +175,6 @@ Manual verification is handled by designated moderators to ensure authenticity.
 - [ ] Location-based donor discovery with map integration
 - [ ] Donation history analytics and insights
 - [ ] Privacy controls for donor information
-- [ ] Public feed for all donor posts
-- [ ] Commenting and interaction features
-- [ ] Mobile app version
 
 ---
 
