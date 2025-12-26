@@ -62,6 +62,7 @@ model User {
   bloodRequests     BloodRequest[]
   acceptedRequests  BloodRequest[]     @relation("AcceptedDonor")
   donorNotifications DonorNotification[]
+  requesterNotifications RequesterNotification[] @relation("RequesterNotificationDonor")
   
   @@index([email])
   @@index([role])
@@ -162,6 +163,7 @@ model BloodRequest {
   acceptedDonor     User?         @relation("AcceptedDonor", fields: [acceptedDonorId], references: [id])
 
   donorNotifications DonorNotification[]
+  requesterNotifications RequesterNotification[]
   
   @@index([status])
   @@index([bloodGroup])
@@ -181,6 +183,24 @@ model DonorNotification {
   bloodRequest   BloodRequest       @relation(fields: [bloodRequestId], references: [id], onDelete: Cascade)
 
   @@unique([donorId, bloodRequestId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RequesterNotification {
+  id             String             @id @default(cuid())
+  requesterEmail String
+  bloodRequestId String
+  donorId        String
+  status         NotificationStatus @default(UNREAD)
+  readAt         DateTime?
+  createdAt      DateTime           @default(now())
+
+  bloodRequest   BloodRequest       @relation(fields: [bloodRequestId], references: [id], onDelete: Cascade)
+  donor          User               @relation("RequesterNotificationDonor", fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterEmail, bloodRequestId])
+  @@index([requesterEmail])
   @@index([status])
   @@index([createdAt])
 }
