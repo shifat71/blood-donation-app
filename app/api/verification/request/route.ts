@@ -11,8 +11,7 @@ export async function POST(request: NextRequest) {
     let studentId: string | undefined;
     
     const contentType = request.headers.get('content-type') || '';
-    console.log('[Verification Request] Content-Type:', contentType);
-    
+
     // Handle both FormData (with file upload) and JSON
     if (contentType.includes('multipart/form-data')) {
       // File upload from signup (no session yet)
@@ -20,8 +19,6 @@ export async function POST(request: NextRequest) {
       const userIdParam = formData.get('userId') as string;
       const studentIdParam = formData.get('studentId') as string;
       const idCardFile = formData.get('idCard') as File | null;
-      
-      console.log('[Verification Request] FormData received - userId:', userIdParam, 'studentId:', studentIdParam, 'hasFile:', !!idCardFile);
       
       if (!userIdParam) {
         return NextResponse.json(
@@ -40,7 +37,6 @@ export async function POST(request: NextRequest) {
           const bytes = await idCardFile.arrayBuffer();
           const buffer = Buffer.from(bytes);
           idCardImageUrl = await uploadToCloudinary(buffer, 'student-id-cards');
-          console.log('[Verification Request] Cloudinary upload successful:', idCardImageUrl);
         } catch (uploadError) {
           console.error('[Verification Request] Cloudinary upload failed:', uploadError);
           // Continue without image - moderators can request it later
@@ -60,13 +56,10 @@ export async function POST(request: NextRequest) {
       const base64Image = body.idCardImageUrl;
       studentId = body.studentId;
       
-      console.log('[Verification Request] JSON received - userId:', userId, 'hasImage:', !!base64Image);
-      
       if (base64Image) {
         try {
           const { uploadToCloudinary } = await import('@/lib/cloudinary');
           idCardImageUrl = await uploadToCloudinary(base64Image, 'student-id-cards');
-          console.log('[Verification Request] Cloudinary upload successful:', idCardImageUrl);
         } catch (uploadError) {
           console.error('[Verification Request] Cloudinary upload failed:', uploadError);
           // Store base64 directly as fallback
@@ -81,7 +74,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      console.error('[Verification Request] User not found:', userId);
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -104,7 +96,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingRequest) {
-      console.log('[Verification Request] Existing pending request found:', existingRequest.id);
       return NextResponse.json(
         { error: 'You already have a pending verification request', existingRequestId: existingRequest.id },
         { status: 400 }
@@ -121,8 +112,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('[Verification Request] Created successfully:', verificationRequest.id, 'for user:', userId);
-    
     return NextResponse.json({
       success: true,
       id: verificationRequest.id,

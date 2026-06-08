@@ -20,8 +20,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, name, studentId, verificationType } = body;
 
-    console.log('[Register] Request received:', { email, name, studentId, verificationType });
-
     // Validation
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -67,8 +65,6 @@ export async function POST(request: NextRequest) {
     
     const isAutoVerification = verificationType === 'auto' && isUniversityEmail;
     
-    console.log('[Register] Verification decision:', { isUniversityEmail, isAutoVerification, verificationType });
-
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
@@ -86,12 +82,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('[Register] User created:', user.id, 'isVerified:', user.isVerified);
-
     // Send OTP email
     try {
       await resend.emails.send({
-        from: 'Blood Donation App <onboarding@resend.dev>',
+        from: process.env.FROM_EMAIL ?? 'Blood Donation App <onboarding@resend.dev>',
         to: email,
         subject: 'Verify Your Email - Blood Donation App',
         html: `

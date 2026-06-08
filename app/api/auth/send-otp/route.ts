@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await resend.emails.send({
-        from: 'Blood Donation App <onboarding@resend.dev>',
+        from: process.env.FROM_EMAIL ?? 'Blood Donation App <onboarding@resend.dev>',
         to: email,
         subject: 'Verify Your Email - Blood Donation App',
         html: `

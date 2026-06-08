@@ -13,8 +13,6 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Please sign in to access this resource' }, { status: 401 });
     }
 
-    console.log('[Moderator API] GET - Session:', session?.user?.email, 'Role:', session?.user?.role);
-
     if (session.user.role !== Role.MODERATOR && session.user.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Moderator or admin access required' }, { status: 403 });
     }
@@ -33,8 +31,6 @@ export async function GET(_request: NextRequest) {
       },
       orderBy: { createdAt: 'asc' },
     });
-
-    console.log('[Moderator API] Found', verificationRequests.length, 'pending requests');
 
     return NextResponse.json(verificationRequests);
   } catch (error) {
