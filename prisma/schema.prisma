@@ -130,6 +130,13 @@ enum RequestStatus {
   APPROVED
   REJECTED
   FULFILLED
+  CANCELLED
+}
+
+enum BloodRequestUrgency {
+  URGENT
+  MODERATE
+  NORMAL
 }
 
 enum NotificationStatus {
@@ -144,8 +151,9 @@ model BloodRequest {
   requesterEmail    String
   requesterPhone    String
   bloodGroup        BloodGroup
-  urgency           String        // URGENT, MODERATE, NORMAL
+  urgency           BloodRequestUrgency
   location          String
+  district          String?
   hospitalName      String?
   patientName       String?
   unitsNeeded       Int           @default(1)
@@ -158,6 +166,7 @@ model BloodRequest {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   approvedAt        DateTime?
+  cancelledAt       DateTime?
   acceptedAt        DateTime?
   acceptedDonorId   String?
   acceptedDonor     User?         @relation("AcceptedDonor", fields: [acceptedDonorId], references: [id])

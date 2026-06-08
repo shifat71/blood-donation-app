@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NotificationStatus } from '@prisma/client';
+import { sendSmsSafe } from '@/lib/sms';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,9 +81,12 @@ export async function POST(req: NextRequest) {
           },
         });
 
+        // Anchor unavailability to a date so the 90-day auto-reset can re-enable
+        // this donor later. Without setting lastDonationDate, an old/null date
+        // would either flip them back to available immediately or never at all.
         await tx.donorProfile.updateMany({
           where: { userId: session.user.id },
-          data: { isAvailable: false },
+          data: { isAvailable: false, lastDonationDate: now },
         });
 
         // Create notification for the requester
@@ -105,6 +109,13 @@ export async function POST(req: NextRequest) {
 
         return { updatedNotification, updatedRequest };
       });
+
+      // Notify requester via SMS that a donor has accepted (best-effort, outside transaction)
+      await sendSmsSafe(
+        notification.bloodRequest.requesterPhone,
+        `Good news! ${session.user.name} has accepted your blood donation request. ` +
+          `They will contact you soon. - Blood Donation App`
+      );
 
       return NextResponse.json({ success: true, notification: result.updatedNotification, request: result.updatedRequest });
     } catch (error) {

@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { resend } from '@/lib/resend';
 import { Role } from '@prisma/client';
+import { getCompatibleDonorGroups } from '@/lib/bloodCompatibility';
+import { sendSmsSafe } from '@/lib/sms';
 
 // HTML escape function to prevent XSS in email templates
 function escapeHtml(text: string | null | undefined): string {
@@ -49,6 +51,7 @@ export async function POST(req: Request) {
 
     let emailsSent = 0;
     const emailErrors: string[] = [];
+    let smsSent = 0;
 
     if (action === 'approve') {
       // First, auto-update availability for donors whose 90-day period has passed
@@ -65,21 +68,31 @@ export async function POST(req: Request) {
         },
       });
 
-      // Now find all available donors with matching blood group
-      const donors = await prisma.donorProfile.findMany({
-        where: {
-          bloodGroup: bloodRequest.bloodGroup,
-          isAvailable: true,
-          user: {
-            isVerified: true,
-          },
-        },
-        include: {
-          user: {
-            select: { id: true, email: true, name: true },
-          },
-        },
+      // Find all available donors whose blood group is compatible with the request.
+      // When the request has a district, same-district donors are notified first;
+      // if fewer than 3 are found, we expand to all compatible donors so urgent
+      // requests always reach the widest possible pool.
+      const compatibleGroups = getCompatibleDonorGroups(bloodRequest.bloodGroup);
+      const donorBaseWhere = {
+        bloodGroup: { in: compatibleGroups },
+        isAvailable: true,
+        user: { isVerified: true },
+      };
+
+      let donors = await prisma.donorProfile.findMany({
+        where: bloodRequest.district
+          ? { ...donorBaseWhere, currentDistrict: bloodRequest.district }
+          : donorBaseWhere,
+        include: { user: { select: { id: true, email: true, name: true } } },
       });
+
+      // If district filter yields fewer than 3 donors, fall back to all compatible
+      if (bloodRequest.district && donors.length < 3) {
+        donors = await prisma.donorProfile.findMany({
+          where: donorBaseWhere,
+          include: { user: { select: { id: true, email: true, name: true } } },
+        });
+      }
 
       if (donors.length > 0) {
         await prisma.donorNotification.createMany({
@@ -91,7 +104,7 @@ export async function POST(req: Request) {
         });
       }
 
-      console.log(`[Blood Request Approval] Found ${donors.length} matching donors for blood group ${bloodRequest.bloodGroup}`);
+      console.log(`[Blood Request Approval] Found ${donors.length} compatible donors`);
 
       // Helper function to process emails in batches to avoid rate limiting
       // Configurable via environment variables for flexibility with different email providers
@@ -102,7 +115,7 @@ export async function POST(req: Request) {
       
       const createEmailPromise = (donor: typeof donors[0]) => 
         resend.emails.send({
-          from: 'Blood Donation <onboarding@resend.dev>',
+          from: process.env.FROM_EMAIL ?? 'Blood Donation <onboarding@resend.dev>',
           to: donor.user.email,
           subject: sanitizeEmailSubject(`🩸 Urgent: ${bloodRequest.bloodGroup.replace('_', ' ')} Blood Needed`),
           html: `
@@ -112,7 +125,7 @@ export async function POST(req: Request) {
               </div>
               <div style="padding: 20px; background: #fff;">
                 <p>Dear <strong>${escapeHtml(donor.user.name)}</strong>,</p>
-                <p>A blood donation request has been approved that matches your blood group.</p>
+                <p>A blood donation request has been approved that you are compatible to donate for.</p>
                 
                 <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0;">
                   <h3 style="color: #dc2626; margin-top: 0;">Request Details:</h3>
@@ -166,25 +179,35 @@ export async function POST(req: Request) {
       results.forEach((result, index) => {
         const donorEmail = donors[index].user.email;
         if (result.status === 'fulfilled') {
-          console.log(`[Blood Request Approval] Email sent successfully to ${donorEmail}`);
           emailsSent++;
         } else {
           const errorMessage = result.reason instanceof Error ? result.reason.message : 'Unknown error';
-          console.error(`[Blood Request Approval] Failed to send email to ${donorEmail}:`, errorMessage);
+          console.error(`[Blood Request Approval] Email send failed:`, errorMessage);
           emailErrors.push(`${donorEmail}: ${errorMessage}`);
         }
       });
 
       console.log(`[Blood Request Approval] Emails sent: ${emailsSent}/${donors.length}`);
-      if (emailErrors.length > 0) {
-        console.log(`[Blood Request Approval] Email errors:`, emailErrors);
-      }
+
+      // Send SMS to donors who have a phone number (best-effort, in parallel)
+      const smsBody =
+        `Blood donation needed: ${bloodRequest.bloodGroup.replace('_', ' ')} at ${bloodRequest.location}. ` +
+        `Contact: ${bloodRequest.requesterName} ${bloodRequest.requesterPhone}. ` +
+        `Urgency: ${bloodRequest.urgency}`;
+
+      const smsResults = await Promise.allSettled(
+        donors
+          .filter((d) => d.phoneNumber)
+          .map((d) => sendSmsSafe(d.phoneNumber, smsBody))
+      );
+      smsSent = smsResults.filter((r) => r.status === 'fulfilled').length;
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       request: updatedRequest,
       emailsSent,
+      smsSent,
       emailErrors: emailErrors.length > 0 ? emailErrors : undefined,
     });
   } catch (error) {

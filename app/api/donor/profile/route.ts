@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { BloodGroup } from '@prisma/client';
+import { normalizeBdPhone } from '@/lib/phone';
 
 // GET donor profile
 export async function GET(_request: NextRequest) {
@@ -52,11 +53,8 @@ export async function GET(_request: NextRequest) {
             },
           },
         });
-        console.log('Auto-updated donor availability to true after 90 days');
       }
     }
-
-    console.log('Fetched donor profile with profilePicture:', donorProfile.profilePicture);
     return NextResponse.json(donorProfile);
   } catch (error) {
     console.error('Error fetching donor profile:', error);
@@ -93,6 +91,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate/normalize phone number when provided (optional field)
+    let normalizedPhone: string | null = null;
+    if (phoneNumber && phoneNumber.trim()) {
+      normalizedPhone = normalizeBdPhone(phoneNumber);
+      if (!normalizedPhone) {
+        return NextResponse.json(
+          { error: 'Invalid phone number. Enter a valid Bangladeshi mobile number (e.g. 017XXXXXXXX).' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Check if profile already exists
     const existingProfile = await prisma.donorProfile.findUnique({
       where: { userId: session.user.id },
@@ -111,7 +121,6 @@ export async function POST(request: NextRequest) {
       try {
         const { uploadToCloudinary } = await import('@/lib/cloudinary');
         uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
-        console.log('Profile picture uploaded to Cloudinary:', uploadedImageUrl);
       } catch (error) {
         console.error('Cloudinary upload failed:', error);
         return NextResponse.json(
@@ -120,7 +129,6 @@ export async function POST(request: NextRequest) {
         );
       }
     } else if (profilePicture && profilePicture.startsWith('http')) {
-      // It's already a URL, use it directly
       uploadedImageUrl = profilePicture;
     }
 
@@ -131,7 +139,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         bloodGroup,
-        phoneNumber,
+        phoneNumber: normalizedPhone,
         address,
         studentId,
         lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null,
@@ -143,7 +151,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('Donor profile created with profilePicture:', donorProfile.profilePicture);
     return NextResponse.json(donorProfile, { status: 201 });
   } catch (error) {
     console.error('Error creating donor profile:', error);
@@ -190,7 +197,6 @@ export async function PUT(request: NextRequest) {
       try {
         const { uploadToCloudinary } = await import('@/lib/cloudinary');
         uploadedImageUrl = await uploadToCloudinary(profilePicture, 'profile-pictures');
-        console.log('Profile picture uploaded to Cloudinary:', uploadedImageUrl);
       } catch (error) {
         console.error('Cloudinary upload failed:', error);
         return NextResponse.json(
@@ -199,8 +205,24 @@ export async function PUT(request: NextRequest) {
         );
       }
     } else if (profilePicture && profilePicture.startsWith('http')) {
-      // It's already a URL (existing image), keep it
       uploadedImageUrl = profilePicture;
+    }
+
+    // Validate/normalize phone number when provided (empty string clears it)
+    let phoneUpdate: { phoneNumber: string | null } | undefined;
+    if (phoneNumber !== undefined) {
+      if (!phoneNumber || !phoneNumber.trim()) {
+        phoneUpdate = { phoneNumber: null };
+      } else {
+        const normalized = normalizeBdPhone(phoneNumber);
+        if (!normalized) {
+          return NextResponse.json(
+            { error: 'Invalid phone number. Enter a valid Bangladeshi mobile number (e.g. 017XXXXXXXX).' },
+            { status: 400 }
+          );
+        }
+        phoneUpdate = { phoneNumber: normalized };
+      }
     }
 
     const donationDateToCheck = lastDonationDate !== undefined ? lastDonationDate : existingProfile.lastDonationDate;
@@ -227,7 +249,7 @@ export async function PUT(request: NextRequest) {
       where: { userId: session.user.id },
       data: {
         ...(bloodGroup && { bloodGroup }),
-        ...(phoneNumber !== undefined && { phoneNumber }),
+        ...(phoneUpdate ?? {}),
         ...(address !== undefined && { address }),
         ...(studentId !== undefined && { studentId }),
         ...(lastDonationDate !== undefined && { 
@@ -250,7 +272,6 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    console.log('Profile updated with profilePicture:', updatedProfile.profilePicture);
     return NextResponse.json(updatedProfile);
   } catch (error) {
     console.error('Error updating donor profile:', error);

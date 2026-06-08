@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Role, BloodGroup } from '@prisma/client';
+import { normalizeBdPhone } from '@/lib/phone';
 
 export async function GET(
   request: NextRequest,
@@ -92,6 +93,23 @@ export async function PUT(
       return NextResponse.json({ error: 'Donor profile not found' }, { status: 404 });
     }
 
+    // Validate/normalize phone number when provided (empty string clears it)
+    let phoneUpdate: { phoneNumber: string | null } | undefined;
+    if (phoneNumber !== undefined) {
+      if (!phoneNumber || !phoneNumber.trim()) {
+        phoneUpdate = { phoneNumber: null };
+      } else {
+        const normalized = normalizeBdPhone(phoneNumber);
+        if (!normalized) {
+          return NextResponse.json(
+            { error: 'Invalid phone number. Enter a valid Bangladeshi mobile number (e.g. 017XXXXXXXX).' },
+            { status: 400 }
+          );
+        }
+        phoneUpdate = { phoneNumber: normalized };
+      }
+    }
+
     // Upload profile picture to Cloudinary if provided
     let uploadedImageUrl = existingProfile.profilePicture;
     if (profilePicture && profilePicture !== existingProfile.profilePicture) {
@@ -108,7 +126,7 @@ export async function PUT(
       where: { id },
       data: {
         ...(bloodGroup && Object.values(BloodGroup).includes(bloodGroup) && { bloodGroup }),
-        ...(phoneNumber !== undefined && { phoneNumber }),
+        ...(phoneUpdate ?? {}),
         ...(address !== undefined && { address }),
         ...(studentId !== undefined && { studentId }),
         ...(lastDonationDate !== undefined && { 
@@ -139,7 +157,7 @@ export async function PUT(
       });
     }
 
-    console.log(`[Admin/Moderator] Profile ${id} updated by ${session.user.email}`);
+    console.log(`[Admin/Moderator] Profile ${id} updated`);
 
     return NextResponse.json(updatedProfile);
   } catch (error) {

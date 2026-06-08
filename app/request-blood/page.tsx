@@ -20,6 +20,7 @@ export default function RequestBloodPage() {
     bloodGroup: 'A_POSITIVE',
     urgency: 'MODERATE',
     location: '',
+    district: '',
     hospitalName: '',
     patientName: '',
     unitsNeeded: '1',
@@ -181,16 +182,32 @@ export default function RequestBloodPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs sm:text-sm font-medium mb-1">Location *</label>
-              <input
-                type="text"
-                required
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base"
-                placeholder="City, District"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-1">Location *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base"
+                  placeholder="e.g. SUST campus, Shahporan"
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-1">District *</label>
+                <select
+                  required
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base"
+                >
+                  <option value="">Select district</option>
+                  {["Sylhet","Dhaka","Chittagong","Rajshahi","Khulna","Barishal","Rangpur","Mymensingh","Comilla","Gazipur","Narayanganj","Cumilla","Cox's Bazar","Brahmanbaria","Jashore","Bogura","Tangail","Dinajpur","Noakhali","Faridpur","Pabna","Sirajganj","Madaripur","Narsingdi","Jamalpur"].sort().map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
